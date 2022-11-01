@@ -7,7 +7,9 @@ def parseFile(file):
     for line in lines:
         if line=='\n' or line=='\r' or line[0]=='#':
             continue
-        print(line)
+        else:
+            list = line.split(' ')
+            print(list)
 
 def main():
     parser = argparse.ArgumentParser()
