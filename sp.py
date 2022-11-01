@@ -9,7 +9,7 @@ def handle_client(client_socket, address):
         if len(msg) <= 0:
             break
         full_msg += msg
-        if msg[-1] == '\n':
+        if msg[-1] == '\0':
             print(address,':',full_msg[:-1])
             full_msg=''
     print("Client disconnected")
@@ -21,10 +21,11 @@ def main():
     s.bind((adress, port))
     s.listen()
     print("Server is listening on {}:{}".format(adress, port))
-
+    
     while True:
         clientsocket, address = s.accept()
         threading.Thread(target=handle_client, args=(clientsocket, address)).start()
+        clientsocket.send("Hello from server\0".encode("utf-8"))
     s.close()
     
 
