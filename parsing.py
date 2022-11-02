@@ -1,7 +1,8 @@
 import argparse
 from ast import main
 
-def parseFile(file):
+def parse_config(file):
+    dic = {}
     f = open(file, 'r')
     lines = f.readlines()
     for line in lines:
@@ -11,27 +12,58 @@ def parseFile(file):
             list = line.split(' ')
             list[2] = list[2].replace('\n', '')
             if list[1]=='DB':
-                #setSP(list[0], list[2])
-                print('DB',list[0],list[2])
+                if list[1] in dic:
+                    dic['DB'].append(list[2])
+                else:
+                    dic['DB'] = [list[2]]
             elif list[1]=='SP':
-                print('DW',list[0],list[2])
+                ip = list[2].split(':')
+                if len(ip) == 1:
+                    ip.append(0)
+                if list[1] in dic:
+                    dic['SP'].append((ip[0],int(ip[1])))
+                else:
+                    dic['SP'] = [(ip[0],int(ip[1]))]
             elif list[1]=='SS':
-                print('DW',list[0],list[2])
+                ip = list[2].split(':')
+                if len(ip) == 1:
+                    ip.append(0)
+                if list[1] in dic:
+                    dic['SS'].append((ip[0],int(ip[1])))
+                else:
+                    dic['SS'] = [(ip[0],int(ip[1]))]
             elif list[1]=='DD':
-                print('DD',list[0],list[2])
+                ip = list[2].split(':')
+                if len(ip) == 1:
+                    ip.append(0)
+                if list[1] in dic:
+                    dic['DD'].append((ip[0],int(ip[1])))
+                else:
+                    dic['DD'] = [(ip[0],int(ip[1]))]
             elif list[1]=='ST':
-                if list[0]=='root':
-                    #stList(list[2])
-                    print('ST',list[0],list[2])
+                if list[1] in dic:
+                    dic['ST'].append((list[0],list[2]))
+                else:
+                    dic['ST'] = [(list[0],list[2])]
             elif list[1]=='LG':
-                if list[0]=='all':
-                    #registerActivity(list[2])
-                    print('LG',list[0],list[2])
+                if list[1] in dic:
+                    dic['LG'].append((list[0],list[2]))
+                else:
+                    dic['LG'] = [(list[0],list[2])]
+    if 'SP' not in dic:
+        dic['TYPE'] = 'SP'
+    elif 'SS' not in dic:
+        dic['TYPE'] = 'SS'
+    else:
+        dic['TYPE'] = 'SR'
+    return dic
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="the file to parse")
     args = parser.parse_args()
-    parseFile(args.file)
+    dictionary = parse_config(args.file)
+    print (dictionary)
+    
 
 if __name__ == "__main__":
     main()
