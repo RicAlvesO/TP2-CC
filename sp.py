@@ -3,15 +3,17 @@ import threading
 
 def handle_client(client_socket, address):
     print("New client connected from {}".format(address))
-    full_msg = ""
     while True:
-        msg = client_socket.recv(8).decode("utf-8")
+        msg = client_socket.recv(1024).decode("utf-8")
         if len(msg) <= 0:
             break
-        full_msg += msg
-        if msg[-1] == '\n':
-            print(address,':',full_msg[:-1])
-            full_msg=''
+        if msg == 'EXIT\0':
+            client_socket.send("Goodbye from server\0".encode("utf-8"))
+            client_socket.send("EXIT\0".encode("utf-8"))
+            break
+        elif msg[-1] == '\0':
+            print(address,':',msg[:-1])
+            msg=''
     print("Client disconnected")
 
 def main():
@@ -21,10 +23,12 @@ def main():
     s.bind((adress, port))
     s.listen()
     print("Server is listening on {}:{}".format(adress, port))
-
+    
+    
     while True:
         clientsocket, address = s.accept()
         threading.Thread(target=handle_client, args=(clientsocket, address)).start()
+        clientsocket.send("Hello from server\0".encode("utf-8"))
     s.close()
     
 
