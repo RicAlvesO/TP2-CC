@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import socket
 import threading
 
@@ -16,39 +18,38 @@ class Client:
         self.cl_socket=None
 
     def receive_msg(self):
-        while True:
-            msg = self.cl_socket.recv(1024).decode("utf-8")
-            if len(msg) <= 0:
-                break
-            if msg == 'EXIT':
-                return 1
-            else:
-                print(self.address+'['+str(self.port)+'] '+msg[:-1])
-                msg = ''
+        
+        msg = self.cl_socket.recv(1024).decode("utf-8")
+        if len(msg) <= 0:
+            return 0
+        if msg == 'EXIT':
+            return 1
+        else:
+            print(self.address+'['+str(self.port)+'] '+msg[:-1])
+            msg = ''
+        return 0
 
     def send_msg(self,msg=''):
         # if the function doesnt get a msg, it waits for input
         # this repeats until the user sends string 'EXIT'
-        if msg=='': 
-            while msg!= 'EXIT':
-                msg=input("#> ")
-                if len(msg)>0:self.cl_socket.sendall(msg.encode("utf-8"))
-        elif msg=='EXIT':
+        if msg=='EXIT':
             return 1
         # otherwise it sends the message from the argument
         else:
             self.cl_socket.sendall(msg.encode("utf-8"))
+        return 0
 
 
 def main():
     address = socket.gethostname()
-    port = 7667
+    port = 53
     client=Client(address, port)
     client.start_connection()
-    threading.Thread(target=client.receive_msg, daemon=True).start()
-    threading.Thread(target=client.send_msg, daemon=True).start()
-    while threading.active_count() > 2:
-        pass
+    inout=0
+    while inout==0:
+        msg=input("#> ")
+        inout+=client.send_msg(msg)
+        inout+=client.receive_msg()
     client.close_connection()
     print("Connection closed")
         
