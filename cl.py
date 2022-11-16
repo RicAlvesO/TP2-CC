@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-
 import socket
-import threading
+
 
 class Client:
     def __init__(self, adress, port):
@@ -22,8 +21,6 @@ class Client:
         msg = self.cl_socket.recv(1024).decode("utf-8")
         if len(msg) <= 0:
             return 0
-        if msg == 'EXIT':
-            return 1
         else:
             print(self.address+'['+str(self.port)+'] '+msg[:-1])
             msg = ''
@@ -42,14 +39,12 @@ class Client:
 
 def main():
     address = socket.gethostname()
-    port = 53
+    port = 5353
     client=Client(address, port)
     client.start_connection()
-    inout=0
-    while inout==0:
-        msg=input("#> ")
-        inout+=client.send_msg(msg)
-        inout+=client.receive_msg()
+    msg="[TEST QUERY]"
+    client.send_msg(msg)
+    client.receive_msg()
     client.close_connection()
     print("Connection closed")
         

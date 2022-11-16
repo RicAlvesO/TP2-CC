@@ -14,10 +14,10 @@ class Server:
         self.port = port
         self.clients = []
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.bind((self.address, 1233))
+        self.tcp_socket.bind((self.address, 5353))
         self.tcp_socket.listen()
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp_socket.bind((self.address, 1233))
+        self.udp_socket.bind((self.address, 5353))
         self.udp_buffer = 1024
         self.log_file = log_file
         self.top_servers = top_servers

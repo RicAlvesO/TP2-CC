@@ -1,6 +1,7 @@
 import argparse
 from ast import main
 
+
 def parse_config(file):
     dic = {}
     f = open(file, 'r')
