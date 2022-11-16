@@ -1,5 +1,4 @@
 import argparse
-from ast import main
 
 
 def parse_config(file):
@@ -13,13 +12,6 @@ def parse_config(file):
             list = line.split(' ')
             list[2] = list[2].replace('\n', '')
             if list[1]=='DB':
-                if 'ADDRESS' not in dic:
-                    dic['ADDRESS'] = list[0].split(':')[0]
-                    if len (list[0].split(':')) > 1:
-                        dic['PORT'] = (int)(list[0].split(':')[1])
-                    else:
-                        dic['PORT'] = 53
-
                 if list[1] in dic:
                     dic['DB'].append(list[2])
                 else:
@@ -27,7 +19,7 @@ def parse_config(file):
             elif list[1]=='SP':
                 ip = list[2].split(':')
                 if len(ip) == 1:
-                    ip.append(53)
+                    ip.append(1234)
                 if list[1] in dic:
                     dic['SP'].append((ip[0],int(ip[1])))
                 else:
@@ -35,7 +27,7 @@ def parse_config(file):
             elif list[1]=='SS':
                 ip = list[2].split(':')
                 if len(ip) == 1:
-                    ip.append(53)
+                    ip.append(1234)
                 if list[1] in dic:
                     dic['SS'].append((ip[0],int(ip[1])))
                 else:
@@ -43,7 +35,7 @@ def parse_config(file):
             elif list[1]=='DD':
                 ip = list[2].split(':')
                 if len(ip) == 1:
-                    ip.append(53)
+                    ip.append(1234)
                 if list[1] in dic:
                     dic['DD'].append((ip[0],int(ip[1])))
                 else:
@@ -54,6 +46,12 @@ def parse_config(file):
                 else:
                     dic['ST'] = [(list[0],list[2])]
             elif list[1]=='LG':
+                if 'ADDRESS' not in dic:
+                    dic['ADDRESS'] = list[0].split(':')[0]
+                    if len (list[0].split(':')) > 1:
+                        dic['PORT'] = (int)(list[0].split(':')[1])
+                    else:
+                        dic['PORT'] = 1234
                 if list[1] in dic:
                     dic['LG'].append((list[0],list[2]))
                 else:

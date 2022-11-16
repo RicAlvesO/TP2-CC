@@ -22,7 +22,7 @@ class Client:
         if len(msg) <= 0:
             return 0
         else:
-            print(self.address+'['+str(self.port)+'] '+msg[:-1])
+            print(self.address+'['+str(self.port)+'] '+msg)
             msg = ''
         return 0
 
@@ -38,8 +38,8 @@ class Client:
 
 
 def main():
-    address = socket.gethostname()
-    port = 5353
+    address = "10.2.2.2"
+    port = 1234
     client=Client(address, port)
     client.start_connection()
     msg="[TEST QUERY]"

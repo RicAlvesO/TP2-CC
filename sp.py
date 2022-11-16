@@ -14,15 +14,15 @@ class Server:
         self.port = port
         self.clients = []
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.bind((self.address, 5353))
+        self.tcp_socket.bind((self.address, port))
         self.tcp_socket.listen()
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp_socket.bind((self.address, 5353))
+        self.udp_socket.bind((self.address, port))
         self.udp_buffer = 1024
         self.log_file = log_file
         self.database = database
         self.top_servers = top_servers
-        self.cache = [] # load database from file
+        self.cache = ["CACHE LINE 0","CACHE LINE 1"] # load database from file
         print("Server started: {}({})".format(self.address, self.port))
 
     def accept_dd_only(self, dd_address):
@@ -36,9 +36,10 @@ class Server:
             socket, address = self.tcp_socket.accept()
             threading.Thread(target=self.handle_querys, args=(socket, address), daemon=True).start()
 
-    def accept_ss(self, ss):
+    def accept_ss(self, ss, phony):
         while True:
             bytes=self.udp_socket.recvfrom(self.udp_buffer)
+            print(bytes)
             message=bytes[0]
             address=bytes[1]
             print("Received message: {}".format(message))
@@ -47,26 +48,24 @@ class Server:
                 threading.Thread(target=self.copy_cache, args=(message, address), daemon=True).start()
 
     def copy_cache(self, message, address):
-        if str.decode(message) == 'COPY':
+        if message.decode() == 'COPY':
             for str in self.cache:
                 self.udp_socket.sendto(str.encode(), address)
+            self.udp_socket.sendto('END'.encode(), address)
 
     def handle_querys(self, client_socket, address):
         print("New client connected from {}".format(address))
         self.clients.append(client_socket)
-        while True:
-            msg = client_socket.recv(1024).decode("utf-8")
-            if len(msg) <= 0:
-                break
-            if msg == 'EXIT':
-                client_socket.send("Goodbye from server".encode("utf-8"))
-                self.last_used = time.time()
-                self.clients.remove(client_socket)
-                break
-            else:
-                print(address,':',msg)
-                self.last_used = time.time()
-                msg=''
+        msg = client_socket.recv(1024).decode("utf-8")
+        if len(msg) <= 0:
+            print("Client disconnected")
+            return
+        else:
+            print(address,':',msg)
+            self.last_used = time.time()
+            msg=''
+        msg="[TEST RESPONSE]"
+        client_socket.send(msg.encode("utf-8"))
         print("Client disconnected")
     
 
@@ -83,31 +82,8 @@ def main(config_file):
     else:
         print('Accepting secondary servers from:',server_info['SS'])
         print('Accepting queries from clients')
-        threading.Thread(target=server.accept_ss, args=(server_info['SS'],), daemon=True).start()
+        threading.Thread(target=server.accept_ss, args=(server_info['SS'],''), daemon=True).start()
         server.accept_clients()
-            
-#    elif server_info['TYPE'] == 'SS':
-#        print('Server type: '+server_info['TYPE'])
-#        server = None
-#        if server_info['PORT'] == 0:
-#            server = Server(server_info['ADDRESS'], 53) 
-#        else: 
-#            server = Server(server_info['ADDRESS'], server_info['PORT'])
-#        for domain,log in server_info['LG']:
-#            print('Log file for',domain+':',log)
-#            server.add_log(domain,log)
-#        print("Server data file:",server_info['DB'])
-#        server.load_data(server_info['DB'])
-#        print('Top servers:',server_info['ST'])
-#        server.set_tops(server_info['ST'])
-#        if 'DD' in server_info:
-#            print('Accepting queries from:',server_info['DD'])
-#            server.accept_querys(server_info['DD'])
-#        else:
-#            print('Accepting queries from secondary servers from:',server_info['SS'])
-#            print('Accepting queries from clients')
-#            threading.Thread(target=server.accept_clients, daemon=True).start()
-#            threading.Thread(target=server.accept_ss, args=server_info['SS'], daemon=True).start()
 
 if __name__ == "__main__":
     main(sys.argv[1]) 

@@ -14,15 +14,15 @@ class Server:
         self.port = port
         self.clients = []
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.bind((self.address, 5353))
+        self.tcp_socket.bind((self.address, port))
         self.tcp_socket.listen()
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp_socket.bind((self.address, 5353))
+        self.udp_socket.bind((self.address, port))
         self.udp_buffer = 1024
         self.log_file = log_file
         self.top_servers = top_servers
         self.primary_server = primary_server
-        self.cache = self.copy_cache(primary_server)
+        self.cache = []
         print("Server started: {}({})".format(self.address, self.port))
 
     def accept_dd_only(self, dd_address):
@@ -40,29 +40,27 @@ class Server:
         self.udp_socket.sendto('COPY'.encode(), primary_server)
         while True:
             bytes=self.udp_socket.recvfrom(self.udp_buffer)
-            message=bytes[0]
+            message=bytes[0].decode()
             address=bytes[1]
             if address == primary_server:
+                if message=='END':
+                    return
+                print(message)
                 self.cache.append(message)
-            else:
-                break
 
     def handle_querys(self, client_socket, address):
         print("New client connected from {}".format(address))
         self.clients.append(client_socket)
-        while True:
-            msg = client_socket.recv(1024).decode("utf-8")
-            if len(msg) <= 0:
-                break
-            if msg == 'EXIT':
-                client_socket.send("Goodbye from server".encode("utf-8"))
-                self.last_used = time.time()
-                self.clients.remove(client_socket)
-                break
-            else:
-                print(address,':',msg)
-                self.last_used = time.time()
-                msg=''
+        msg = client_socket.recv(1024).decode("utf-8")
+        if len(msg) <= 0:
+            print("Client disconnected")
+            return
+        else:
+            print(address,':',msg)
+            self.last_used = time.time()
+            msg=''
+        msg="[TEST RESPONSE]"
+        client_socket.send(msg.encode("utf-8"))
         print("Client disconnected")
     
 
@@ -73,6 +71,7 @@ def main(config_file):
         print("Error parsing config file")
         return
     server = Server(server_info['ADDRESS'], server_info['PORT'], server_info['LG'], server_info['ST'], server_info['SP'])
+    server.copy_cache(server.primary_server[0])
     if 'DD' in server_info:
         print('Accepting queries from:',server_info['DD'])
         server.accept_dd_only(server_info['DD'])
