@@ -6,42 +6,23 @@ class Client:
     def __init__(self, adress, port):
         self.port = port
         self.address = adress
-        self.cl_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    def start_connection(self):
-        self.cl_socket.connect((self.address, self.port))
-        print("Connected to {}:{}".format(self.address, self.port))
-
-    def close_connection(self):
-        self.cl_socket.close()
-        self.cl_socket=None
+        self.cl_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_buffer = 1024
 
     def receive_msg(self):
+        bytes = self.cl_socket.recvfrom(self.udp_buffer).decode()
+        message = bytes[0].decode()
+        address = bytes[1]
+        print(self.address+'['+str(address)+'] '+message)
         
-        msg = self.cl_socket.recv(1024).decode("utf-8")
-        if len(msg) <= 0:
-            return 0
-        else:
-            print(self.address+'['+str(self.port)+'] '+msg)
-            msg = ''
-        return 0
-
     def send_msg(self,msg=''):
-        # if the function doesnt get a msg, it waits for input
-        # this repeats until the user sends string 'EXIT'
-        if msg=='EXIT':
-            return 1
-        # otherwise it sends the message from the argument
-        else:
-            self.cl_socket.sendall(msg.encode("utf-8"))
-        return 0
+        self.cl_socket.sendto(msg.encode(), (self.address, self.port))
 
 
 def main():
     address = "10.2.2.2"
     port = 1234
     client=Client(address, port)
-    client.start_connection()
     msg="[TEST QUERY]"
     client.send_msg(msg)
     client.receive_msg()

@@ -27,36 +27,34 @@ class Server:
 
     def accept_dd_only(self, dd_address):
         while True:
-            socket, address = self.tcp_socket.accept()
+            bytes = self.udp_socket.recvfrom()
+            message=bytes[0].decode()
+            address=bytes[1]
             if address==dd_address[0]:
-                threading.Thread(target=self.handle_querys, args=(socket, address), daemon=True).start()
+                threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
 
     def accept_clients(self):
         while True:
-            socket, address = self.tcp_socket.accept()
-            threading.Thread(target=self.handle_querys, args=(socket, address), daemon=True).start()
-
-    def accept_ss(self, ss, phony):
-        while True:
-            bytes=self.udp_socket.recvfrom(self.udp_buffer)
-            print(bytes)
-            message=bytes[0]
+            bytes = self.udp_socket.recvfrom()
+            message=bytes[0].decode()
             address=bytes[1]
-            print("Received message: {}".format(message))
-            print("From address: {}".format(address))
-            if address in ss:
-                threading.Thread(target=self.copy_cache, args=(message, address), daemon=True).start()
+            threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
 
-    def copy_cache(self, message, address):
+    def accept_ss(self, ss):
+        while True:
+            socket,address = self.tcp_socket.accept()
+            if address in ss:
+                threading.Thread(target=self.copy_cache, args=(socket), daemon=True).start()
+
+    def copy_cache(self, socket):
+        message = socket.recv(1024).decode()
         if message.decode() == 'COPY':
             for str in self.cache:
-                self.udp_socket.sendto(str.encode(), address)
-            self.udp_socket.sendto('END'.encode(), address)
+                socket.send(str.encode())
+            socket.send('END'.encode())
 
-    def handle_querys(self, client_socket, address):
+    def handle_querys(self, msg, address):
         print("New client connected from {}".format(address))
-        self.clients.append(client_socket)
-        msg = client_socket.recv(1024).decode("utf-8")
         if len(msg) <= 0:
             print("Client disconnected")
             return
@@ -65,7 +63,7 @@ class Server:
             self.last_used = time.time()
             msg=''
         msg="[TEST RESPONSE]"
-        client_socket.send(msg.encode("utf-8"))
+        self.udp_socket.send(msg.encode(),address)
         print("Client disconnected")
     
 
