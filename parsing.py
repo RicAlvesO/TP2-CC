@@ -63,11 +63,95 @@ def parse_config(file):
     else:
         dic['TYPE'] = 'SR'
     return dic
+
+def parse_dataFile(file):
+    dic = {}
+    f = open(file, 'r')
+    lines = f.readlines()
+    for line in lines:
+        if line=='\n' or line=='\r' or line[0]=='#' or line.startswith('#'):
+            continue
+        else:
+            list = line.split(' ')
+            if list[1]=='DEFAULT':
+                list[2] = list[2].replace('\n', '')
+                if list[0]== '@':
+                    dic['@'] = list[2]
+                if list[0]=='TTL':
+                    dic['TTL'] = list[2]
+            elif list[1]=='NS':
+                if len(list)<4:
+                    list.append('-1')
+                list.append('-1')
+                if list[1] in dic:
+                    dic['NS'].append((list[0],list[2],list[3],list[4]))
+                else:
+                    dic['NS'] = [(list[0],list[2],list[3],list[4])]
+            else:
+                list[3] = list[3].replace('\n', '')
+                if len(list)<5:
+                    list.append('-1')
+                else:
+                    list[4] = list[4].replace('\n', '')
+                if list[1]=='SOASP':
+                    if list[1] in dic:
+                        dic['SOASP'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['SOASP'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='SOAADMIN':
+                    if list[1] in dic:
+                        dic['SOAADMIN'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['SOAADMIN'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='SOASERIAL':
+                    if list[1] in dic:
+                        dic['SOASERIAL'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['SOASERIAL'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='SOAREFRESH':
+                    if list[1] in dic:
+                        dic['SOAREFRESH'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['SOAREFRESH'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='SOARETRY':
+                    if list[1] in dic:
+                        dic['SOARETRY'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['SOARETRY'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='SOAEXPIRE':
+                    if list[1] in dic:
+                        dic['SOAEXPIRE'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['SOAEXPIRE'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='A':
+                    if list[1] in dic:
+                        dic['A'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['A'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='CNAME':
+                    if list[1] in dic:
+                        dic['CNAME'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['CNAME'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='MX':
+                    if list[1] in dic:
+                        dic['MX'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['MX'] = [(list[0],list[2],list[3],list[4])]
+                elif list[1]=='PTR':
+                    if list[1] in dic:
+                        dic['PTR'].append((list[0],list[2],list[3],list[4]))
+                    else:
+                        dic['PTR'] = [(list[0],list[2],list[3],list[4])]
+
+    return dic   
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="the file to parse")
     args = parser.parse_args()
-    dictionary = parse_config(args.file)
+    dictionary = parse_dataFile(args.file)
     print (dictionary)
     
 
