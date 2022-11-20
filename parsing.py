@@ -144,7 +144,7 @@ def parse_dataFile(file):
                     else:
                         dic['PTR'] = [(list[0],list[2],list[3],list[4])]
 
-    return dic   
+    return dic
 
 
 def main():
@@ -153,7 +153,6 @@ def main():
     args = parser.parse_args()
     dictionary = parse_dataFile(args.file)
     print (dictionary)
-    
 
 if __name__ == "__main__":
     main()

@@ -10,11 +10,11 @@ class Client:
         self.udp_buffer = 1024
 
     def receive_msg(self):
-        bytes = self.cl_socket.recvfrom(self.udp_buffer).decode()
+        bytes = self.cl_socket.recvfrom(self.udp_buffer)
         message = bytes[0].decode()
         address = bytes[1]
         print(self.address+'['+str(address)+'] '+message)
-        
+
     def send_msg(self,msg=''):
         self.cl_socket.sendto(msg.encode(), (self.address, self.port))
 
@@ -26,9 +26,7 @@ def main():
     msg="[TEST QUERY]"
     client.send_msg(msg)
     client.receive_msg()
-    client.close_connection()
     print("Connection closed")
-        
 
 if __name__ == "__main__":
     main()

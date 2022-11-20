@@ -14,8 +14,6 @@ class Server:
         self.port = port
         self.clients = []
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.bind((self.address, self.port))
-        self.tcp_socket.listen()
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.udp_socket.bind((self.address, port))
         self.udp_buffer = 1024
@@ -27,7 +25,7 @@ class Server:
 
     def accept_dd_only(self, dd_address):
         while True:
-            bytes = self.udp_socket.recvfrom()
+            bytes = self.udp_socket.recvfrom(self.udp_buffer)
             message=bytes[0].decode()
             address=bytes[1]
             if address==dd_address[0]:
@@ -35,19 +33,21 @@ class Server:
 
     def accept_clients(self):
         while True:
-            bytes = self.udp_socket.recvfrom()
+            bytes = self.udp_socket.recvfrom(self.udp_buffer)
             message=bytes[0].decode()
             address=bytes[1]
             threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
 
     def copy_cache(self, primary_server):
         self.tcp_socket.connect(primary_server)
+        self.tcp_socket.sendall('COPY'.encode())
         while True:
-            message=self.tcp_socket.recvfrom(1020).decode()
-            if message=='END':
+            message=self.tcp_socket.recv(1020).decode()
+            if message  == 'END':
+                self.tcp_socket.close()
                 return
-            print(message)
             self.cache.append(message)
+            print (self.cache)
 
     def handle_querys(self, msg, address):
         print("New client connected from {}".format(address))
@@ -59,9 +59,8 @@ class Server:
             self.last_used = time.time()
             msg=''
         msg="[TEST RESPONSE]"
-        self.udp_socket.send(msg.encode(),address)
+        self.udp_socket.sendto(msg.encode(),address)
         print("Client disconnected")
-    
 
 def main(config_file):
     server_info = parsing.parse_config(config_file)
@@ -77,6 +76,6 @@ def main(config_file):
     else:
         print('Accepting queries from clients')
         server.accept_clients()
-            
+
 if __name__ == "__main__":
-    main(sys.argv[1]) 
+    main(sys.argv[1])

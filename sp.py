@@ -27,7 +27,7 @@ class Server:
 
     def accept_dd_only(self, dd_address):
         while True:
-            bytes = self.udp_socket.recvfrom()
+            bytes = self.udp_socket.recvfrom(self.udp_buffer)
             message=bytes[0].decode()
             address=bytes[1]
             if address==dd_address[0]:
@@ -35,20 +35,23 @@ class Server:
 
     def accept_clients(self):
         while True:
-            bytes = self.udp_socket.recvfrom()
+            bytes = self.udp_socket.recvfrom(self.udp_buffer)
             message=bytes[0].decode()
             address=bytes[1]
             threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
 
-    def accept_ss(self, ss):
+    def accept_ss(self, ss, phony):
         while True:
             socket,address = self.tcp_socket.accept()
-            if address in ss:
-                threading.Thread(target=self.copy_cache, args=(socket), daemon=True).start()
+            print (address,ss,address in ss)
+            if address[0] in (x[0] for x in ss):
+                threading.Thread(target=self.copy_cache, args=[socket], daemon=True).start()
 
     def copy_cache(self, socket):
-        message = socket.recv(1024).decode()
+        message = socket.recv(1024)
+        print (message.decode())
         if message.decode() == 'COPY':
+            print('ola')
             for str in self.cache:
                 socket.send(str.encode())
             socket.send('END'.encode())
@@ -63,9 +66,8 @@ class Server:
             self.last_used = time.time()
             msg=''
         msg="[TEST RESPONSE]"
-        self.udp_socket.send(msg.encode(),address)
+        self.udp_socket.sendto(msg.encode(),address)
         print("Client disconnected")
-    
 
 def main(config_file):
     server_info = parsing.parse_config(config_file)
@@ -84,4 +86,4 @@ def main(config_file):
         server.accept_clients()
 
 if __name__ == "__main__":
-    main(sys.argv[1]) 
+    main(sys.argv[1])
