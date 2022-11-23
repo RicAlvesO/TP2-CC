@@ -15,7 +15,7 @@ class Client:
         bytes = self.cl_socket.recvfrom(self.udp_buffer)
         message = bytes[0].decode()
         address = bytes[1]
-        print(self.address+'['+str(address)+'] '+message)
+        print('['+str(address)+']: '+message)
 
     def send_msg(self,msg=''):
         self.cl_socket.sendto(msg.encode(), (self.address, self.port))
@@ -28,17 +28,14 @@ def main(args):
     else:
         address= args[1]
         port = 53
-    print(address)
     client=Client(address, port)
     id = random.randint(0, 65535)
     query=str(id)+',Q'
     if len(args)==5:
         query+='+'+args[4]
     query+=',0,0,0,0;'+args[2]+','+args[3]+';'
-    print(query)
     client.send_msg(query)
     client.receive_msg()
-    print("Connection closed")
 
 if __name__ == "__main__":
     main(sys.argv)
