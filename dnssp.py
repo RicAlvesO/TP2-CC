@@ -93,18 +93,18 @@ class Server:
         if len(msg) <= 0:
             print("Client disconnected")
             return
-        elif msg.split(';')[1].split(',')[0] == self.domain:
-            print(address,':',msg)
-            now=time.time()
-            passed_time=self.last_used-now
-            self.last_used = now
-            get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
-            msg=msg.split(',')[0]+',,0,'+str(len(get_cache))+',0,5;example.com.,MX;\n'
+    
+        now=time.time()
+        passed_time=self.last_used-now
+        self.last_used = now
+        get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
+        msg=msg.split(',')[0]+',,0,'+str(len(get_cache))+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+        if get_cache!=[]:
             for l in get_cache:
                 msg+=l+',\n'
             self.udp_socket.sendto(msg[:-2].encode(),address)
         else:
-            self.udp_socket.sendto("NULL".encode(),address)
+            self.udp_socket.sendto((msg.split(',')[0]+',,1,0,0,0;'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\nNOT FOUND').encode(),address)
         print("Client disconnected")
 
 def main(args):
