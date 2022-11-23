@@ -44,7 +44,7 @@ class Server:
         for domain,log in self.log_file:
             if domain == file:
                 with open(log, 'a+') as f:
-                    f.write(message)
+                    f.write(message+'\n')
 
     def accept_clients(self):
         while True:
@@ -130,7 +130,7 @@ def main(args):
     if len(args)>4 and args[4]=="debug":
         debug='debug'
     server = Server(server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['DB'], server_info['ST'], default_ttl, debug)
-    server.write_log(server.domain, 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
+    server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()
     server.accept_clients()
 

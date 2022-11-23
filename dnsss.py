@@ -27,6 +27,9 @@ class Server:
         self.debug=False
         if debug=='debug':
             self.debug=True
+        for domain,log in self.log_file:
+            f=open(log,'a+')
+            f.close()
 
     def write_log(self, file, type, endereco, msg):
         named_tuple = time.localtime() # get struct_time
@@ -35,7 +38,7 @@ class Server:
         if self.debug: 
             print(message)
         with open(file, 'a+') as f:
-            f.write(message)
+            f.write(message+'\n')
 
     def accept_clients(self):
         while True:
@@ -80,7 +83,6 @@ class Server:
     def handle_querys(self, msg, address):
         self.write_log(self.domain, 'QR', address,msg[:-1])
         imp=msg.split(',')[0]+','+msg.split(',')[1]+','+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]
-        #self.write_log(self.log_file[self.domain], 'QR', address[0]+':'+str(address[1]), imp)
         if len(msg) <= 0:
             return
         now=time.time()
@@ -117,7 +119,7 @@ def main(args):
     if len(args)>4 and args[4]=="debug":
         debug='debug'
     server = Server(server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], server_info['SP'], default_ttl, debug)
-    server.write_log(server.domain, 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
+    server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.copy_cache(server.primary_server[0])
     
     server.accept_clients()
