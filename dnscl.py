@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import random
 import socket
+import sys
 
 
 class Client:
@@ -19,14 +21,23 @@ class Client:
         self.cl_socket.sendto(msg.encode(), (self.address, self.port))
 
 
-def main():
-    address = "10.2.2.2"
-    port = 1234
+def main(args):
+    if len(args[1].split(':')) == 2:
+        address= args[1].split(':')[0]
+        port = int(args[1].split(':')[1])
+    else:
+        address= args[1]
+        port = 53
     client=Client(address, port)
-    msg="[TEST QUERY]"
-    client.send_msg(msg)
+    id = random.randint(0, 65535)
+    query=str(id)+',Q'
+    if len(args)==5:
+        query+='+'+args[4]
+    query+=',0,0,0,0;'+args[2]+','+args[3]+';'
+    print(query)
+    client.send_msg(query)
     client.receive_msg()
     print("Connection closed")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

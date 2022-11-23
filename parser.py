@@ -19,7 +19,7 @@ def parse_config(file):
             elif list[1]=='SP':
                 ip = list[2].split(':')
                 if len(ip) == 1:
-                    ip.append(1234)
+                    ip.append(53)
                 if list[1] in dic:
                     dic['SP'].append((ip[0],int(ip[1])))
                 else:
@@ -27,7 +27,7 @@ def parse_config(file):
             elif list[1]=='SS':
                 ip = list[2].split(':')
                 if len(ip) == 1:
-                    ip.append(1234)
+                    ip.append(53)
                 if list[1] in dic:
                     dic['SS'].append((ip[0],int(ip[1])))
                 else:
@@ -35,7 +35,7 @@ def parse_config(file):
             elif list[1]=='DD':
                 ip = list[2].split(':')
                 if len(ip) == 1:
-                    ip.append(1234)
+                    ip.append(53)
                 if list[1] in dic:
                     dic['DD'].append((ip[0],int(ip[1])))
                 else:
@@ -51,7 +51,7 @@ def parse_config(file):
                     if len (list[0].split(':')) > 1:
                         dic['PORT'] = (int)(list[0].split(':')[1])
                     else:
-                        dic['PORT'] = 1234
+                        dic['PORT'] = 53
                 if list[1] in dic:
                     dic['LG'].append((list[0],list[2]))
                 else:
