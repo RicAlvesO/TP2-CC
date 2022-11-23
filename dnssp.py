@@ -6,9 +6,18 @@ import time
 
 import parser
 
-
+# Classe para representar um Servidor Primário
 class Server:
 
+    # Inicia o Server usando os dados address, port, domain, log_file, database, top_servers, default_ttl e debug
+    # address: Endereco
+    # port: Porta utilizada pelo servidor
+    # domain: Domínio do servidor
+    # log_file: Ficheiro de log
+    # database: Base de dados utilizada
+    # top_servers: Lista dos Servidores de Topo
+    # default_ttl: Tempo de validade, tempo máximo em segundos que os dados podem existir na cache do servidor
+    # debug: Indica se o servidor se encontra em modo debug ou não
     def __init__(self, address, port, domain, log_file, database, top_servers, default_ttl, debug):
         self.address = address
         self.port = port
@@ -33,6 +42,11 @@ class Server:
             f=open(log,'a+')
             f.close()
         
+    # Método usado para escrever no ficheiro de log, que é utilizado para registar a atividade do servidor
+    # file: Indica o domínio usado
+    # type: Tipo de entrada
+    # endereco: Endereço IP
+    # msg: Mensagem a ser escrita
     def write_log(self, file, type, endereco, msg):
         named_tuple = time.localtime() # get struct_time
         time_string = time.strftime("[%m/%d/%Y-%H:%M:%S]", named_tuple)
@@ -46,6 +60,7 @@ class Server:
                 with open(log, 'a+') as f:
                     f.write(message+'\n')
 
+    # Método usado para aceitar os clientes e ser permitido a execução de queries
     def accept_clients(self):
         while True:
             bytes = self.udp_socket.recvfrom(self.udp_buffer)
@@ -53,13 +68,17 @@ class Server:
             address=bytes[1]
             threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
             
-
+    # Método usado para aceitar um Servidor Secundário
+    # ss: Informações do Servidor Secundário
+    # address: Endereço IP usado
     def accept_ss(self, ss, self_address):
         while True:
             socket,address = self.tcp_socket.accept()
             if address[0] in (x[0] for x in ss):
                 threading.Thread(target=self.copy_cache, args=(socket,self_address, address), daemon=True).start()
 
+    # Método usado para copiar de um domínio em especifico
+    # domain: Domínio usado
     def copy_for_domain(self, domain):
         list=[]
         for type in self.cache:
@@ -68,6 +87,10 @@ class Server:
                     list.append(ent[0]+' '+type+' '+ent[1])
         return list
 
+    # Método usado para copiar a cache de um servidor para um outro
+    # socket : Socket usado
+    # self_domain: Domínio utilizado e a ter a cache copiada
+    # address: Endereço IP usado
     def copy_cache(self, socket, self_domain, address):
         dom = socket.recv(1024)
         if dom.decode().split(':')[0] == self.address or dom.decode()==self_domain:
@@ -88,6 +111,9 @@ class Server:
             self.write_log(self.domain, 'EZ',address, 'SP')
             socket.send("-1".encode())
 
+    # Método usado para buscar as informações de um domínio e com um tipo especifico
+    # domain: Domínio usado
+    # type: Tipo do valor
     def fetch_db(self, domain, type):
         list=[]
         if type in self.cache:
@@ -97,6 +123,9 @@ class Server:
         
         return list
 
+    # Método que executa as querys
+    # msg: Mensagem da query
+    # address: Endereço IP a ser usado
     def handle_querys(self, msg, address):
         self.write_log(self.domain, 'QR', address,msg[:-1])
         if len(msg) <= 0:
@@ -116,6 +145,7 @@ class Server:
             self.udp_socket.sendto(resp.encode(),address)
             self.write_log(self.domain, 'RE', address, msg.replace('\n','\\\\'))
 
+# Método principal para a execução do programa 
 def main(args):
     server_info = parser.parse_config(args[1])
     if server_info is None:
