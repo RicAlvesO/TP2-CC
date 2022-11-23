@@ -1,4 +1,4 @@
-# DNS database file for domain example.com
+# DNS database file for domain bastuco.cam
 
 # It also includes a pointer to the primary server
 
@@ -6,7 +6,7 @@
 
 
 
-@ DEFAULT example.com.
+@ DEFAULT Barcelos.cam.
 
 TTL DEFAULT 86400
 
