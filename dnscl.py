@@ -28,6 +28,7 @@ def main(args):
     else:
         address= args[1]
         port = 53
+    print(address)
     client=Client(address, port)
     id = random.randint(0, 65535)
     query=str(id)+',Q'

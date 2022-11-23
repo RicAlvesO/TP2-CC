@@ -9,20 +9,21 @@ import parser
 
 class Server:
 
-    def __init__(self, adress, port, domain, log_file, database, top_servers):
-        self.address = adress
-        self.port = port
+    def __init__(self, address, domain, log_file, database, top_servers):
+        self.address = address[0]
+        self.port = address[1]
         self.domain = domain
         self.clients = []
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.bind((self.address, port))
+        self.tcp_socket.bind(address)
         self.tcp_socket.listen()
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp_socket.bind((self.address, port))
+        self.udp_socket.bind(address)
         self.udp_buffer = 1024
         self.log_file = log_file
         self.database = database
         self.top_servers = top_servers
+        self.last_used = time.time()
         self.cache = ["CACHE LINE 0","CACHE LINE 1"] # load database from file
         print("Server started: {}({})".format(self.address, self.port))
 
@@ -34,13 +35,13 @@ class Server:
             if address==dd_address[0]:
                 threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
 
-    def accept_clients(self, self_address):
+    def accept_clients(self):
         while True:
             bytes = self.udp_socket.recvfrom(self.udp_buffer)
             message=bytes[0].decode()
             address=bytes[1]
             desired_address=message.split(';')[1].split(',')[0]
-            if desired_address==self_address:
+            if desired_address==self.domain:
                 threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
 
     def accept_ss(self, ss, self_address):
@@ -49,14 +50,22 @@ class Server:
             if address[0] in (x[0] for x in ss):
                 threading.Thread(target=self.copy_cache, args=(socket,self_address), daemon=True).start()
 
-    def copy_cache(self, socket, self_address):
+    def copy_cache(self, socket, self_domain):
         message = socket.recv(1024)
-        if message.decode() == self_address:
+        if message.decode().split(':')[0] == self.address or message.decode()==self_domain:
             socket.send(str(len(self.cache)).encode())
             ack=socket.recv(1024)
             if ack.decode() == "OK":
-                for str in self.cache:
-                    socket.send(str.encode())
+                for strs in self.cache:
+                    i=0
+                    while i<5:
+                        socket.send(strs.encode())
+                        ack=socket.recv(1024)
+                        if ack.decode() == "OK":
+                            i=5
+                        i+=1
+        else:
+            socket.send("-1".encode())
 
     def handle_querys(self, msg, address):
         print("New client connected from {}".format(address))
@@ -80,15 +89,11 @@ def main(config_file):
     if server_info is None:
         print("Error parsing config file")
         return
-    server = Server("", server_info['PORT'], server_info['LG'], server_info['DB'], server_info['ST'])
-    if 'DD' in server_info:
-        print('Accepting queries from:',server_info['DD'])
-        server.accept_dd_only(server_info['DD'])
-    else:
-        print('Accepting secondary servers from:',server_info['SS'])
-        print('Accepting queries from clients')
-        threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()
-        server.accept_clients()
+    server = Server(server_info['DD'][0], server_info['ADDRESS'],server_info['LG'], server_info['DB'], server_info['ST'])
+    print('Accepting secondary servers from:',server_info['SS'])
+    print('Accepting queries from clients')
+    threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()
+    server.accept_clients()
 
 if __name__ == "__main__":
     main(sys.argv[1])
