@@ -1,6 +1,7 @@
 import argparse
 
-
+# Método usado para fazer o parser de um ficheiro de configuração
+# file: Ficheiro de configuração 
 def parse_config(file):
     dic = {}
     f = open(file, 'r')
@@ -64,6 +65,8 @@ def parse_config(file):
         dic['TYPE'] = 'SR'
     return dic
 
+# Método usado para fazer o parser de um ficheiro de dados
+# file: Ficheiro de dados
 def parse_dataFile(file):
     dic = {}
     arro = ''
@@ -157,7 +160,7 @@ def parse_dataFile(file):
 
     return dic
 
-
+# Método principal para a execução do programa 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="the file to parse")
