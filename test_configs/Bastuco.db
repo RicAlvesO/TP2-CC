@@ -6,7 +6,7 @@
 
 
 
-@ DEFAULT Barcelos.cam.
+@ DEFAULT Barcelos.cam
 
 TTL DEFAULT 86400
 
@@ -14,7 +14,7 @@ TTL DEFAULT 86400
 
 @ SOASP Servidor1.gdoiszerotres.cc. TTL
 
-@ SOAADMIN dns\.admin.gdoiszerotres.cc. TTL
+Felgueiras.cam SOAADMIN dns\.admin.gdoiszerotres.cc. TTL
 
 @ SOASERIAL 0117102022 TTL
 
