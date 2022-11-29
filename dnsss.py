@@ -33,9 +33,9 @@ class Server:
         self.last_used=time.time()
         self.cache = {}
         self.default_ttl= default_ttl
-        self.debug=False
-        if debug=='debug':
-            self.debug=True
+        self.debug=True
+        if debug=='shy':
+            self.debug=False
         for domain,log in self.log_file:
             f=open(log,'a+')
             f.close()
@@ -83,7 +83,6 @@ class Server:
         if size==-1:
             self.write_log(self.domain, 'EZ',primary_server, 'SP')
             self.tcp_socket.shutdown(socket.SHUT_RDWR)
-            socket.close()
             return
         self.tcp_socket.sendall("OK".encode())
         while size>0:
@@ -111,6 +110,8 @@ class Server:
         passed_time=self.last_used-now
         self.last_used = now
         get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
+        get_cache +=self.fetch_db(msg.split(';')[1].split(',')[0],'A')
+        get_cache +=self.fetch_db(msg.split(';')[1].split(',')[0],'NS')
         resp=msg.split(',')[0]+',,0,'+str(len(get_cache))+',0,0;'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
         if get_cache!=[]:
             for l in get_cache:
@@ -134,13 +135,13 @@ def main(args):
         return
     port=server_info['PORT']
     default_ttl=86400
-    debug=False
+    debug='debug'
     if len(args)>2:
         port=int(args[2])
     if len(args)>3:
         default_ttl=int(args[3])
-    if len(args)>4 and args[4]=="debug":
-        debug='debug'
+    if len(args)>4 and args[4]=="shy":
+        debug='shy'
     server = Server(server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], server_info['SP'], default_ttl, debug)
     server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.copy_cache(server.primary_server[0])

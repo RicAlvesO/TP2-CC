@@ -34,9 +34,9 @@ class Server:
         self.top_servers = top_servers
         self.last_used = time.time()
         self.default_ttl = default_ttl
-        self.debug=False
-        if debug=='debug':
-            self.debug=True
+        self.debug=True
+        if debug=='shy':
+            self.debug=False
         self.cache = parser.parse_dataFile(database[0])
         for domain,log in self.log_file:
             f=open(log,'a+')
@@ -83,6 +83,8 @@ class Server:
         list=[]
         for type in self.cache:
             for ent in self.cache[type]:
+                if type=='A':
+                    list.append(ent[0]+' '+type+' '+ent[1])
                 if ent[0] == domain:
                     list.append(ent[0]+' '+type+' '+ent[1])
         return list
@@ -134,9 +136,11 @@ class Server:
         passed_time=self.last_used-now
         self.last_used = now
         get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
-        resp=msg.split(',')[0]+',,0,'+str(len(get_cache))+',0,0;'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
-        if get_cache!=[]:
-            for l in get_cache:
+        auto_cache =self.fetch_db(msg.split(';')[1].split(',')[0],'NS')
+        extra_cache =self.fetch_db(msg.split(';')[1].split(',')[0],'A')
+        resp=msg.split(',')[0]+',,0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+        if (get_cache+extra_cache)!=[]:
+            for l in get_cache+auto_cache+extra_cache:
                 resp+=l+',\n'
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
@@ -152,13 +156,13 @@ def main(args):
         return
     port=server_info['PORT']
     default_ttl=86400
-    debug='shy'
+    debug='debug'
     if len(args)>2:
         port=int(args[2])
     if len(args)>3:
         default_ttl=int(args[3])
-    if len(args)>4 and args[4]=="debug":
-        debug='debug'
+    if len(args)>4 and args[4]=="shy":
+        debug='shy'
     server = Server(server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['DB'], server_info['ST'], default_ttl, debug)
     server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()

@@ -1,0 +1,76 @@
+# DNS database file for domain bastuco.cam
+
+# It also includes a pointer to the primary server
+
+# of the smaller.example.com subdomain
+
+
+
+@ DEFAULT Felgueiras.dist
+
+TTL DEFAULT 86400
+
+
+
+@ SOASP Servidor1.gdoiszerotres.cc. TTL
+
+@ SOAADMIN dns\.admin.gdoiszerotres.cc. TTL
+
+@ SOASERIAL 0117102022 TTL
+
+@ SOAREFRESH 14400 TTL
+
+@ SOARETRY 3600 TTL
+
+@ SOAEXPIRE 604800 TTL
+
+
+
+@ NS Servidor1.gdoiszerotres.cc. TTL
+
+@ NS Servidor2.gdoiszerotres.cc. TTL
+
+@ NS Servidor3.gdoiszerotres.cc. TTL
+
+
+
+Smaller.@ NS sp.subdom.gdoiszerotres.cc.
+
+
+
+@ MX Portatil1.gdoiszerotres.cc TTL 10
+
+@ MX Portatil2.gdoiszerotres.cc TTL 20
+
+
+
+ns1 A 10.2.2.1 TTL
+
+ns2 A 10.2.2.2 TTL
+
+ns3 A 10.2.2.3 TTL
+
+sp.subdom A 10.3.3.3 TTL
+
+mx1 A 10.1.1.1 TTL
+
+mx2 A 10.1.1.2 TTL
+
+www A 10.3.3.2 TTL 200
+
+www A 10.1.1.3 TTL 200
+
+ftp A 10.3.3.1 TTL
+
+
+
+sp CNAME ns1 TTL
+
+ss1 CNAME ns2 TTL
+
+ss2 CNAME ns3 TTL
+
+mail1 CNAME mx1 TTL
+
+mail2 CNAME mx2 TTL
+
