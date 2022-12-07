@@ -83,7 +83,7 @@ class Server:
         list=[]
         for type in self.cache:
             for ent in self.cache[type]:
-                if type=='A':
+                if type=='A' and ent[1].split(' ')[0] == domain:
                     list.append(ent[0]+' '+type+' '+ent[1])
                 if ent[0] == domain:
                     list.append(ent[0]+' '+type+' '+ent[1])
@@ -120,9 +120,14 @@ class Server:
         list=[]
         if type in self.cache:
             for entry in self.cache[type]:
-                if entry[0] == domain:
+                if type=='A' and entry[1].split(' ')[0] == domain:
                     list.append(entry[0]+' '+type+' '+entry[1])
-        
+                elif entry[0] == domain:
+                    list.append(entry[0]+' '+type+' '+entry[1])
+        else:
+            for entry in self.cache['A']:
+                if entry[1].split(' ')[0] == domain:
+                    list.append(entry[0]+' '+entry[1])
         return list
 
     # Método que executa as querys
