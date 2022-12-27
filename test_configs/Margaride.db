@@ -5,72 +5,65 @@
 # of the smaller.example.com subdomain
 
 
+Margaride.dist SOASP Servidor1.Margaride.dist 86400 200
 
-@ DEFAULT Felgueiras.dist
+Margaride.dist SOAADMIN dns\.admin.Margaride.dist 86400 200
 
-TTL DEFAULT 86400
+Margaride.dist SOASERIAL 0117102022 86400 200
 
+Margaride.dist SOAREFRESH 14400 86400 200
 
+Margaride.dist SOARETRY 3600 86400 200
 
-@ SOASP Servidor1.gdoiszerotres.cc. TTL
-
-@ SOAADMIN dns\.admin.gdoiszerotres.cc. TTL
-
-@ SOASERIAL 0117102022 TTL
-
-@ SOAREFRESH 14400 TTL
-
-@ SOARETRY 3600 TTL
-
-@ SOAEXPIRE 604800 TTL
+Margaride.dist SOAEXPIRE 604800 86400 200
 
 
 
-@ NS Servidor1.gdoiszerotres.cc. TTL
+Margaride.dist NS Servidor1.Margaride.dist 86400 200
 
-@ NS Servidor2.gdoiszerotres.cc. TTL
+Margaride.dist NS Servidor2.Margaride.dist 86400 200
 
-@ NS Servidor3.gdoiszerotres.cc. TTL
-
-
-
-Smaller.@ NS sp.subdom.gdoiszerotres.cc.
+Margaride.dist NS Servidor3.Margaride.dist 86400 200
 
 
 
-@ MX Portatil1.gdoiszerotres.cc TTL 10
-
-@ MX Portatil2.gdoiszerotres.cc TTL 20
+Smaller.Margaride.dist NS sp.subdom.Margaride.dist 86400 200
 
 
 
-ns1 A 10.2.2.1 TTL
+Margaride.dist MX Portatil1.gdoiszerotres.cc 86400 10
 
-ns2 A 10.2.2.2 TTL
-
-ns3 A 10.2.2.3 TTL
-
-sp.subdom A 10.3.3.3 TTL
-
-mx1 A 10.1.1.1 TTL
-
-mx2 A 10.1.1.2 TTL
-
-www A 10.3.3.2 TTL 200
-
-www A 10.1.1.3 TTL 200
-
-ftp A 10.3.3.1 TTL
+Margaride.dist MX Portatil2.gdoiszerotres.cc 86400 20
 
 
 
-sp CNAME ns1 TTL
+ns1 A 10.2.2.1 86400 200
 
-ss1 CNAME ns2 TTL
+ns2 A 10.2.2.2 86400 200
 
-ss2 CNAME ns3 TTL
+ns3 A 10.2.2.3 86400 200
 
-mail1 CNAME mx1 TTL
+sp.subdom A 10.3.3.3 86400 200
 
-mail2 CNAME mx2 TTL
+mx1 A 10.1.1.1 86400 200
+
+mx2 A 10.1.1.2 86400 200
+
+www A 10.3.3.2 86400 200
+
+www A 10.1.1.3 86400 200
+
+ftp A 10.3.3.1 86400 200
+
+
+
+sp CNAME ns1 86400 200
+
+ss1 CNAME ns2 86400 200
+
+ss2 CNAME ns3 86400 200
+
+mail1 CNAME mx1 86400 200
+
+mail2 CNAME mx2 86400 200
 

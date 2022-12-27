@@ -6,15 +6,15 @@
 
 
 
-@ DEFAULT Barcelos.cam
+@ DEFAULT Bastuco.cam
 
 TTL DEFAULT 86400
 
 
 
-@ SOASP Servidor1.gdoiszerotres.cc. TTL
+@ SOASP Servidor1.Bastuco.cam TTL
 
-Felgueiras.cam SOAADMIN dns\.admin.gdoiszerotres.cc. TTL
+Felgueiras.cam SOAADMIN dns\.admin.Bastuco.cam TTL
 
 @ SOASERIAL 0117102022 TTL
 
@@ -26,15 +26,15 @@ Felgueiras.cam SOAADMIN dns\.admin.gdoiszerotres.cc. TTL
 
 
 
-@ NS Servidor1.gdoiszerotres.cc. TTL
+@ NS Servidor1.Bastuco.cam TTL
 
-@ NS Servidor2.gdoiszerotres.cc. TTL
+@ NS Servidor2.Bastuco.cam TTL
 
-@ NS Servidor3.gdoiszerotres.cc. TTL
+@ NS Servidor3.Bastuco.cam TTL
 
 
 
-Smaller.@ NS sp.subdom.gdoiszerotres.cc.
+Smaller.@ NS sp.subdom.Bastuco.cam
 
 
 

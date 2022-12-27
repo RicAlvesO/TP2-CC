@@ -5,6 +5,7 @@ import threading
 import time
 
 import parser
+import cache
 
 # Classe para representar um Servidor Primário
 class Server:
@@ -37,7 +38,9 @@ class Server:
         self.debug=True
         if debug=='shy':
             self.debug=False
-        self.cache = parser.parse_dataFile(database[0])
+        self.cache = cache.Cache()
+        self.cache.insert_DB(self.database[0])
+
         for domain,log in self.log_file:
             f=open(log,'a+')
             f.close()
@@ -80,14 +83,7 @@ class Server:
     # Método usado para copiar de um domínio em especifico
     # domain: Domínio usado
     def copy_for_domain(self, domain):
-        list=[]
-        for type in self.cache:
-            for ent in self.cache[type]:
-                if type=='A':
-                    list.append(ent[0]+' '+type+' '+ent[1])
-                if ent[0] == domain:
-                    list.append(ent[0]+' '+type+' '+ent[1])
-        return list
+        return self.cache.get_entries_for_domain(domain)
 
     # Método usado para copiar a cache de um servidor para um outro
     # socket : Socket usado
@@ -117,13 +113,7 @@ class Server:
     # domain: Domínio usado
     # type: Tipo do valor
     def fetch_db(self, domain, type):
-        list=[]
-        if type in self.cache:
-            for entry in self.cache[type]:
-                if entry[0] == domain:
-                    list.append(entry[0]+' '+type+' '+entry[1])
-        
-        return list
+        return self.cache.get_entry(domain, type)
 
     # Método que executa as querys
     # msg: Mensagem da query
