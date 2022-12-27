@@ -6,71 +6,65 @@
 
 
 
-@ DEFAULT Bastuco.cam
+Bastuco.cam SOASP Servidor1.Bastuco.cam 86400 3600
 
-TTL DEFAULT 86400
+Bastuco.cam SOAADMIN dns\.admin.Bastuco.cam 86400 3600
 
+Bastuco.cam SOASERIAL 0117102022 86400 3600
 
+Bastuco.cam SOAREFRESH 14400 86400 3600
 
-@ SOASP Servidor1.Bastuco.cam TTL
+Bastuco.cam SOARETRY 3600 86400 3600
 
-Felgueiras.cam SOAADMIN dns\.admin.Bastuco.cam TTL
-
-@ SOASERIAL 0117102022 TTL
-
-@ SOAREFRESH 14400 TTL
-
-@ SOARETRY 3600 TTL
-
-@ SOAEXPIRE 604800 TTL
+Bastuco.cam SOAEXPIRE 604800 86400 3600
 
 
 
-@ NS Servidor1.Bastuco.cam TTL
+Bastuco.cam NS ns1.Bastuco.cam 86400 3600
 
-@ NS Servidor2.Bastuco.cam TTL
+Bastuco.cam NS ns2.Bastuco.cam 86400 3600
 
-@ NS Servidor3.Bastuco.cam TTL
-
-
-
-Smaller.@ NS sp.subdom.Bastuco.cam
+Bastuco.cam NS ns3.Bastuco.cam 86400 3600
 
 
 
-@ MX Portatil1.gdoiszerotres.cc TTL 10
-
-@ MX Portatil2.gdoiszerotres.cc TTL 20
+Smaller.Bastuco.cam NS sp.subdom.Bastuco.cam 86400 3600
 
 
 
-ns1 A 10.2.2.1 TTL
+Bastuco.cam MX mx1.Bastuco.cam 86400 10
 
-ns2 A 10.2.2.2 TTL
-
-ns3 A 10.2.2.3 TTL
-
-sp.subdom A 10.3.3.3 TTL
-
-mx1 A 10.1.1.1 TTL
-
-mx2 A 10.1.1.2 TTL
-
-www A 10.3.3.2 TTL 200
-
-www A 10.1.1.3 TTL 200
-
-ftp A 10.3.3.1 TTL
+Bastuco.cam MX mx2.Bastuco.cam 86400 20
 
 
 
-sp CNAME ns1 TTL
+ns1.Bastuco.cam A 10.2.2.1 86400 3600
 
-ss1 CNAME ns2 TTL
+ns2.Bastuco.cam A 10.2.2.2 86400 3600
 
-ss2 CNAME ns3 TTL
+ns3.Bastuco.cam A 10.2.2.3 86400 3600
 
-mail1 CNAME mx1 TTL
+sp.subdom.Bastuco.cam A 10.3.3.3 86400 3600
 
-mail2 CNAME mx2 TTL
+mx1.Bastuco.cam A 10.1.1.1 86400 3600
+
+mx2.Bastuco.cam A 10.1.1.2 86400 3600
+
+www.Bastuco.cam A 10.3.3.2 86400 200
+
+www.Bastuco.cam A 10.1.1.3 86400 200
+
+ftp.Bastuco.cam A 10.3.3.1 86400 3600
+
+
+
+sp.Bastuco.cam CNAME ns1.Bastuco.cam 86400 3600
+
+ss1.Bastuco.cam CNAME ns2.Bastuco.cam 86400 3600
+
+ss2.Bastuco.cam CNAME ns3.Bastuco.cam 86400 3600
+
+mail1.Bastuco.cam CNAME mx1.Bastuco.cam 86400 3600
+
+mail2.Bastuco.cam CNAME mx2.Bastuco.cam 86400 3600
 

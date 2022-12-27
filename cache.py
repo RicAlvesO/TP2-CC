@@ -53,16 +53,43 @@ class Cache:
     def get_entry(self,name,type):
         list = []
         for entry in self.entrys:
-            if entry.name == name and entry.type == type:
+            if entry.name.endswith(name) and entry.type == type:
                 list.append(entry.__str__())
+        return list
+
+    def get_extra_values(self,name,type):
+        list = []
+        for entry in self.entrys:
+            if entry.name.endswith(name) and (entry.type == 'NS' or entry.type == type):
+                for entry2 in self.entrys:
+                    if entry2.name == entry.value and entry2.type == 'A':
+                        list.append(entry2.__str__())
         return list
 
     def get_entries_for_domain(self,domain):
         list = []
         for entry in self.entrys:
-            if entry.name == domain:
+            if entry.name.endswith(domain):
                 list.append(entry.__str__())
         return list
+
+    def get_query(self,name,type):
+        extra_tags = []
+        default = []
+        for entry in self.entrys:
+            if entry.name==name and entry.type == type:
+                default.append(entry.__str__())
+                extra_tags.append(entry.value)
+        auto_values = []
+        for entry in self.entrys:
+            if entry.name==name and entry.type == 'NS':
+                auto_values.append(entry.__str__())
+                extra_tags.append(entry.value)
+        extra_values = []
+        for entry in self.entrys:
+            if entry.name in extra_tags and entry.type == 'A':
+                extra_values.append(entry.__str__())
+        return [default,auto_values,extra_values]
 
     def __str__(self):
         string = ''
@@ -99,10 +126,10 @@ class Entry:
 
 
 def main():
-    cache = Cache()
+    cache = Cache(86400)
     cache.insert_DB('./test_configs/Margaride.db') 
     print(cache)
-    print(cache.get_entry('www','A'))
+    print(cache.get_entry('ns1','A'))
 
 if __name__=='__main__':
     main()

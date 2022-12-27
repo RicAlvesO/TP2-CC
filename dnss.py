@@ -50,7 +50,6 @@ class Server:
 
         if debug=='shy':
             self.debug=False
-        self.cache.insert_DB(self.database[0])
 
         for domain,log in self.log_file:
             f=open(log,'a+')
@@ -100,7 +99,7 @@ class Server:
     # address: Endereço IP usado
     def copy_cache(self, socket, self_domain, address):
         dom = socket.recv(1024)
-        if dom.decode().split(':')[0] == self.address or dom.decode()==self_domain:
+        if dom.decode()==self_domain:
             llist=self.copy_for_domain(dom.decode())
             socket.send(str(len(llist)).encode())
             ack=socket.recv(1024)
@@ -144,7 +143,7 @@ class Server:
     # domain: Domínio usado
     # type: Tipo do valor
     def fetch_db(self, domain, type):
-        return self.cache.get_entry(domain, type)
+        return self.cache.get_query(domain, type)
 
     # Método que executa as querys
     # msg: Mensagem da query
@@ -157,12 +156,13 @@ class Server:
         #PROCURA DA RESPOSTA NA CACHE
 
         get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
-        auto_cache =self.fetch_db(msg.split(';')[1].split(',')[0],'NS')
-        extra_cache =self.fetch_db(msg.split(';')[1].split(',')[0],'A')
+        auto_cache = get_cache[1]
+        extra_cache = get_cache[2]
+        get_cache = get_cache[0]
         resp=msg.split(',')[0]+',,0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
         
         
-        if (get_cache+extra_cache)!=[]:
+        if (get_cache)!=[]:
 
             # RESPOSTA ENCONTRADA NA CACHE
 
@@ -211,16 +211,16 @@ def main(args):
         default_ttl=int(args[3])
     if len(args)>4 and args[4]=="shy":
         debug='shy'
-    if(server_info['Type']=='SP'):
-        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
+    if(server_info['TYPE']=='SP'):
+        server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
         threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()
-    elif(server_info['Type']=='SS'):
-        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, primary_server=server_info['SP'])
+    elif(server_info['TYPE']=='SS'):
+        server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, primary_server=server_info['SP'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
         server.receive_cache(server.primary_server[0])
-    elif(server_info['Type']=='SR'):
-        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SERVERS'])
+    elif(server_info['TYPE']=='SR'):
+        server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SERVERS'])
         server.write_log('all', 'SR', ('127.0.01',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.accept_clients()
 
