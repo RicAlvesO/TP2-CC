@@ -18,7 +18,7 @@ class Server:
     # top_servers: Lista dos Servidores de Topo
     # default_ttl: Tempo de validade, tempo máximo em segundos que os dados podem existir na cache do servidor
     # debug: Indica se o servidor se encontra em modo debug ou não
-    def __init__(self, stype, address, port, domain, log_file, top_servers, default_ttl, debug, database=None,primary_server=None):
+    def __init__(self, stype, address, port, domain, log_file, top_servers, default_ttl, debug, database=None,primary_server=None, default_servers=None):
         self.address = address
         self.port = port
         self.domain = domain
@@ -32,16 +32,26 @@ class Server:
         self.last_used = time.time()
         self.default_ttl = default_ttl
         self.debug=True
-        if stype=='sp': 
+        self.stype=stype
+
+
+        if stype=='SP': 
             self.database = database
             self.cache = parser.parse_dataFile(database[0])
             self.tcp_socket.bind((address,port))
             self.tcp_socket.listen()
-        if stype=='ss':
+
+        elif stype=='SS':
             self.primary_server = primary_server
             self.cache = {}
+
+        elif stype=='SR':
+            self.cache = {}
+            self.default_servers = default_servers
+
         if debug=='shy':
             self.debug=False
+
         for domain,log in self.log_file:
             f=open(log,'a+')
             f.close()
@@ -168,19 +178,49 @@ class Server:
         now=time.time()
         passed_time=self.last_used-now
         self.last_used = now
+
+        #PROCURA DA RESPOSTA NA CACHE
+
         get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
         auto_cache =self.fetch_db(msg.split(';')[1].split(',')[0],'NS')
         extra_cache =self.fetch_db(msg.split(';')[1].split(',')[0],'A')
         resp=msg.split(',')[0]+',,0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+        
+        
         if (get_cache+extra_cache)!=[]:
+
+            # RESPOSTA ENCONTRADA NA CACHE
+
             for l in get_cache+auto_cache+extra_cache:
                 resp+=l+',\n'
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
+        
+        elif self.stype=='SR':
+        
+            # RESPOSTA NAO ESTA NA CACHE E SERVIDOR É SR LOGO PERGUNTA AO SERVER DEFAULT
+        
+            udp_sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            udp_sock.sendto(msg.encode(), self.default_server[0])
+            self.write_log(self.domain, 'QE', self.default_server[0],msg[:-1])
+            bytes = udp_sock.recvfrom(self.udp_buffer)
+            msg = bytes[0].decode()
+            self.write_log(self.domain, 'RR', self.default_server[0],msg.replace('\n','\\\\'))
+            self.udp_socket.sendto(msg.encode(),address)
+            self.write_log(self.domain, 'RE', address,msg.replace('\n','\\\\'))
+            
         else:
-            resp=msg.split(',')[0]+',,1,0,0,0;'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\nNOT FOUND'
-            self.udp_socket.sendto(resp.encode(),address)
-            self.write_log(self.domain, 'RE', address, msg.replace('\n','\\\\'))
+
+            # RESPOSTA NAO ESTA NA CACHE E SERVIDOR É PRIMARIO/SECUNDARIO LOGO PERGUNTA AO SERVER DE TOPO
+
+            udp_sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            udp_sock.sendto(msg.encode(), self.top_servers[0])
+            self.write_log(self.domain, 'QE', self.top_servers[0],msg[:-1])
+            bytes = udp_sock.recvfrom(self.udp_buffer)
+            msg = bytes[0].decode()
+            self.write_log(self.domain, 'RR', self.top_servers[0],msg.replace('\n','\\\\'))
+            self.udp_socket.sendto(msg.encode(),address)
+            self.write_log(self.domain, 'RE', address,msg.replace('\n','\\\\'))
 
 # Método principal para a execução do programa 
 def main(args):
@@ -197,13 +237,16 @@ def main(args):
     if len(args)>4 and args[4]=="shy":
         debug='shy'
     if(server_info['Type']=='SP'):
-        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, server_info['DB'])
+        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
         threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()
     elif(server_info['Type']=='SS'):
-        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, server_info['SP'])
+        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, primary_server=server_info['SP'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
         server.receive_cache(server.primary_server[0])
+    elif(server_info['Type']=='SR'):
+        server = Server(server_info['Type'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SERVERS'])
+        server.write_log('all', 'SR', ('127.0.01',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.accept_clients()
 
 
