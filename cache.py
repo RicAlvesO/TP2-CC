@@ -2,7 +2,8 @@ import time
 
 class Cache:
 
-    def __init__(self):
+    def __init__(self, default_ttl):
+        self.default_ttl = default_ttl
         self.entrys = []
         for i in range(100):
             self.entrys.append(Entry(i,'','','',0,0,0.0))

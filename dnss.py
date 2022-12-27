@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-import parser
 import socket
 import sys
 import threading
 import time
 
-import parser
+import fparser
 import cache
 
 # Classe para representar um Servidor Primário
@@ -31,29 +30,26 @@ class Server:
         self.udp_buffer = 1024
         self.log_file = log_file
         self.top_servers = top_servers
-        self.last_used = time.time()
         self.default_ttl = default_ttl
         self.debug=True
         self.stype=stype
+        self.cache = cache.Cache(default_ttl)
 
 
         if stype=='SP': 
             self.database = database
-            self.cache = parser.parse_dataFile(database[0])
+            self.cache.insert_DB(database[0])
             self.tcp_socket.bind((address,port))
             self.tcp_socket.listen()
 
         elif stype=='SS':
             self.primary_server = primary_server
-            self.cache = {}
 
         elif stype=='SR':
-            self.cache = {}
             self.default_servers = default_servers
 
         if debug=='shy':
             self.debug=False
-        self.cache = cache.Cache()
         self.cache.insert_DB(self.database[0])
 
         for domain,log in self.log_file:
@@ -136,11 +132,7 @@ class Server:
         self.tcp_socket.sendall("OK".encode())
         while size>0:
             message=self.tcp_socket.recv(1024).decode()
-            message=message.split(' ')
-            if message[1] in self.cache:
-                self.cache[message[1]].append((message[0],message[2]+' '+message[3]+' '+message[4]))
-            else:
-                self.cache[message[1]]=[(message[0],message[2]+' '+message[3]+' '+message[4])]
+            self.cache.insert_cache(message)
             self.tcp_socket.sendall("OK".encode())
             size-=1
         self.tcp_socket.shutdown(socket.SHUT_RDWR)
@@ -161,9 +153,6 @@ class Server:
         self.write_log(self.domain, 'QR', address,msg[:-1])
         if len(msg) <= 0:
             return
-        now=time.time()
-        passed_time=self.last_used-now
-        self.last_used = now
 
         #PROCURA DA RESPOSTA NA CACHE
 
@@ -210,7 +199,7 @@ class Server:
 
 # Método principal para a execução do programa 
 def main(args):
-    server_info = parser.parse_config(args[1])
+    server_info = fparser.parse_config(args[1])
     if server_info is None:
         return
     port=server_info['PORT']

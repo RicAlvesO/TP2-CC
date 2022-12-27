@@ -1,9 +1,5 @@
 # TP2 CC
 
-## Description
-
-Ce projet est un TP de la matière Conception et Construction de Logiciels (CC) de l'Université de Lorraine.
-
 ## Utilização
 
 ### Client
