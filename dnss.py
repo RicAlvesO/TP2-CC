@@ -159,43 +159,158 @@ class Server:
         auto_cache = get_cache[1]
         extra_cache = get_cache[2]
         get_cache = get_cache[0]
-        resp=msg.split(',')[0]+',,0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+        val_amount = len(get_cache)
+        flags = msg.split(',')[1]
+        if not flags.contains('A'):
+            flags+='+A'
         
-        
-        if (get_cache)!=[]:
+        if val_amount!=0:
 
             # RESPOSTA ENCONTRADA NA CACHE
 
-            for l in get_cache+auto_cache+extra_cache:
-                resp+=l+',\n'
+            flags.replace('Q','')
+            resp=msg.split(',')[0]+','+flags+',0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+            if len(get_cache) > 0:
+                for l in get_cache:
+                    resp += l+',\n'
+                resp = resp[:-2]
+            resp += ';'
+            if len(auto_cache) > 0:
+                for l in auto_cache:
+                    resp += l+',\n'
+                resp = resp[:-2]
+            resp += ';'
+            if len(extra_cache) > 0:
+                for l in extra_cache:
+                    resp += l+',\n'
+                resp = resp[:-2]
+            resp += ';'
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
+            return
         
-        elif self.stype=='SR':
+        elif self.stype=='SR' and not msg.split(',')[1].contains('A'):
         
             # RESPOSTA NAO ESTA NA CACHE E SERVIDOR É SR LOGO PERGUNTA AO SERVER DEFAULT
         
             udp_sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            udp_sock.sendto(msg.encode(), self.default_server[0])
-            self.write_log(self.domain, 'QE', self.default_server[0],msg[:-1])
-            bytes = udp_sock.recvfrom(self.udp_buffer)
-            msg = bytes[0].decode()
-            self.write_log(self.domain, 'RR', self.default_server[0],msg.replace('\n','\\\\'))
-            self.udp_socket.sendto(msg.encode(),address)
-            self.write_log(self.domain, 'RE', address,msg.replace('\n','\\\\'))
+            server = 0
+            while server < len(self.default_server):
+                try:
+                    udp_sock.sendto((','.join(msg.split(',')[0]+flags+msg.split(';')[0].split(',')[2:])+';'+msg.split(';')[1].split(',')[1]+';').encode(), self.default_server[server])
+                    udp_sock.settimeout(5)
+                    self.write_log(self.domain, 'QE', self.default_server[server], msg[:-1])
+                    break
+                except:
+                    server+=1
             
+            if server != len(self.default_server):
+                bytes = udp_sock.recvfrom(self.udp_buffer)
+                resp = bytes[0].decode()
+                self.write_log(self.domain, 'RR', self.default_server[server],resp.replace('\n','\\\\'))
+                val_amount=int(resp.split(',')[3])
+                if val_amount > 0 :
+                    self.cache.insert_cache(resp)
+                    self.udp_socket.sendto(resp.encode(),address)
+                    self.write_log(self.domain, 'RE', address,resp.replace('\n','\\\\'))
+                    return
+
+        if msg.split(',')[1].contains('A'):
+            flags.replace('Q','')
+            error=1
+            if len(auto_cache)+len(extra_cache) == 0:
+                error=2
+            resp=msg.split(',')[0]+','+flags+','+error+','+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1]+';\n'
+            for l in get_cache+auto_cache+extra_cache:
+                resp+=l+',\n'
+            self.udp_socket.sendto(resp[:-1].encode(),address)
+            self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
+            return
+
+        # RESPOSTA NAO ESTA NA CACHE E SERVIDOR É PRIMARIO/SECUNDARIO LOGO PERGUNTA AO SERVER DE TOPO
+        
+        doms = msg.split(';')[1].split(',')[0].split('.')[:-1]
+        for i in range(len(doms)):
+            doms[i]=('.'.join(doms[i:])+'.')
+        doms.reverse()
+
+        to_try = self.top_servers
+
+        while len(doms)>0:
+            dom = doms.pop(0)
+            udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            server = 0
+            while server < len(to_try):
+                try:
+                    udp_sock.sendto((','.join(msg.split(',')[0]+flags+msg.split(';')[0].split(',')[2:])+';'+dom+','+msg.split(';')[1].split(',')[1]+';').encode(), to_try[server])
+                    udp_sock.settimeout(5)
+                    self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
+                    break
+                except:
+                    server += 1
+
+            if server != len(to_try):
+                bytes = udp_sock.recvfrom(self.udp_buffer)
+                res = bytes[0].decode()
+                self.write_log(self.domain, 'RR', self.to_try[server], res.replace('\n', '\\\\'))
+                auto_amount = int(res.split(',')[4])
+                extra_amount = int(res.split(',')[5])
+                if auto_amount+extra_amount > 0:
+                    self.cache.insert_cache(res)
+                    to_try = []
+                    find=[]
+                    for i in range(auto_amount):
+                        if res.split(';')[3].split(',')[i].split(' ')[1] == 'NS':
+                            find.append(res.split(';')[3].split(',')[i].split(' ')[2])
+                    for i in range(extra_amount):
+                        if res.split(';')[4].split(',')[i].split(' ')[0] in find:
+                            to_try.append(res.split(';')[4].split(',')[i].split(' ')[2])
+                    get_cache = res.split(';')[2].split(',')
+                    auto_cache = res.split(';')[3].split(',')
+                    extra_cache = res.split(';')[4].split(',')
+                else:
+                    doms=[]
+                    
+
+        if val_amount==0:
+            flags.replace('Q','')
+            error=1
+            if len(auto_cache)+len(extra_cache) == 0:
+                error=2
+            resp=msg.split(',')[0]+','+flags+','+error+','+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+            resp+= ';'
+            if len(auto_cache)>0:
+                for l in auto_cache:
+                    resp += l+',\n'
+                resp=resp[:-2]
+            resp+= ';'
+            if len(extra_cache)>0:
+                for l in extra_cache:
+                    resp += l+',\n'
+                resp=resp[:-2]
+            resp+= ';'
+            self.udp_socket.sendto(resp[:-1].encode(),address)
+            self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
         else:
-
-            # RESPOSTA NAO ESTA NA CACHE E SERVIDOR É PRIMARIO/SECUNDARIO LOGO PERGUNTA AO SERVER DE TOPO
-
-            udp_sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            udp_sock.sendto(msg.encode(), self.top_servers[0])
-            self.write_log(self.domain, 'QE', self.top_servers[0],msg[:-1])
-            bytes = udp_sock.recvfrom(self.udp_buffer)
-            msg = bytes[0].decode()
-            self.write_log(self.domain, 'RR', self.top_servers[0],msg.replace('\n','\\\\'))
-            self.udp_socket.sendto(msg.encode(),address)
-            self.write_log(self.domain, 'RE', address,msg.replace('\n','\\\\'))
+            flags.replace('Q','')
+            resp=msg.split(',')[0]+','+flags+',0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+            if len(get_cache)>0:
+                for l in get_cache:
+                    resp += l+',\n'
+                resp=resp[:-2]
+            resp+= ';'
+            if len(auto_cache)>0:
+                for l in auto_cache:
+                    resp += l+',\n'
+                resp=resp[:-2]
+            resp+= ';'
+            if len(extra_cache)>0:
+                for l in extra_cache:
+                    resp += l+',\n'
+                resp=resp[:-2]
+            resp+= ';'
+            self.udp_socket.sendto(resp[:-1].encode(),address)
+            self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
 
 # Método principal para a execução do programa 
 def main(args):
