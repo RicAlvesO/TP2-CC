@@ -1,0 +1,31 @@
+#Ficheiro de base de dados do subdominio braga.dist.
+
+braga.dist. SOASP Servidor1.braga.dist. 86400 3600 #
+braga.dist. SOAADMIN dns\.admin.braga.dist. 86400 3600 #
+braga.dist. SOASERIAL 0117102022 86400 3600 #
+braga.dist. SOAREFRESH 14400 86400 3600 #
+braga.dist. SOARETRY 3600 86400 3600 #
+braga.dist. SOAEXPIRE 604800 86400 3600 #
+
+braga.dist. NS ns1.braga.dist. 86400 3600
+braga.dist. NS ns2.braga.dist. 86400 3600
+braga.dist. NS ns3.braga.dist. 86400 3600
+
+braga.dist. MX mx1.braga.dist. 86400 10 #
+braga.dist. MX mx2.braga.dist. 86400 20 #
+
+ns1.braga.dist. A 10.1.1.3 86400 3600
+ns2.braga.dist. A 10.1.1.1 86400 3600
+ns3.braga.dist. A 10.1.1.2 86400 3600
+
+mx1.braga.dist. A 10.1.1.1 86400 3600 #
+mx2.braga.dist. A 10.1.1.2 86400 3600 #
+www.braga.dist. A 10.3.3.2 86400 200 #
+www.braga.dist. A 10.1.1.3 86400 200 #
+ftp.braga.dist. A 10.3.3.1 86400 3600 #
+
+sp.braga.dist. CNAME ns1.braga.dist. 86400 3600
+ss1.braga.dist. CNAME ns2.braga.dist. 86400 3600
+ss2.braga.dist. CNAME ns3.braga.dist. 86400 3600
+mail1.braga.dist. CNAME mx1.braga.dist. 86400 3600 #
+mail2.braga.dist. CNAME mx2.braga.dist. 86400 3600 #
