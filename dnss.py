@@ -43,6 +43,7 @@ class Server:
             self.tcp_socket.listen()
 
         elif stype=='SS':
+            self.last_update = -1
             self.primary_server = primary_server
 
         elif stype=='SR':
@@ -101,7 +102,8 @@ class Server:
     # address: Endereço IP usado
     def copy_cache(self, socket, self_domain, address):
         dom = socket.recv(1024)
-        if dom.decode()==self_domain:
+        serial = socket.recv(1024)
+        if dom.decode()==self_domain[0] and int(serial.decode())!=self.cache.get_serial():
             llist=self.copy_for_domain(dom.decode())
             socket.send(str(len(llist)).encode())
             ack=socket.recv(1024)
@@ -115,20 +117,40 @@ class Server:
                             i=5
                         i+=1
             self.write_log(self.domain, 'ZT',address, 'SP')
+        elif dom.decode()==self_domain[0] and int(serial.decode())==self.cache.get_serial():
+            self.write_log(self.domain, 'EZ',address, 'SP')
+            socket.send("0".encode())
         else:
             self.write_log(self.domain, 'EZ',address, 'SP')
             socket.send("-1".encode())
 
 
+    def cache_update(self, primary_server):
+        self.receive_cache(primary_server)
+        updated=True
+        while True:
+            time.sleep(self.cache.get_refesh())
+            updated=False
+            while not updated:
+                i=self.receive_cache(primary_server)
+                if i>=0:
+                    self.last_update=time.time()
+                    updated=True
+                else:
+                    time.sleep(self.cache.get_retry())
+        
+        
     # Método usado para copiar a cache de um servidor para um outro
     # primary_server: Servidor Primário que terá a cache copiada
     def receive_cache(self, primary_server):
         self.tcp_socket.connect(primary_server)
         self.tcp_socket.sendall(self.domain.encode())
+        self.tcp_socket.sendall((str(self.cache.get_serial())).encode())
         size=int(self.tcp_socket.recv(1024).decode())
         if size==-1:
             self.write_log(self.domain, 'EZ',primary_server, 'SP')
             self.tcp_socket.shutdown(socket.SHUT_RDWR)
+            self.tcp_socket.close()
             return
         self.tcp_socket.sendall("OK".encode())
         while size>0:
@@ -157,40 +179,44 @@ class Server:
 
         print(msg)
 
-        #PROCURA DA RESPOSTA NA CACHE
-
-        get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
-        auto_cache = get_cache[1]
-        extra_cache = get_cache[2]
-        get_cache = get_cache[0]
-        val_amount = len(get_cache)
+        if self.type == 'SS' and time.time()-self.last_update>=self.cache.get_expire():
+            get_cache=[]
+            auto_cache=[]
+            extra_cache=[]
+            val_amount=0
+        else:
+            #PROCURA DA RESPOSTA NA CACHE
+            get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
+            auto_cache = get_cache[1]
+            extra_cache = get_cache[2]
+            get_cache = get_cache[0]
+            val_amount = len(get_cache)
+            
         flags = msg.split(',')[1]
         if 'A' not in flags:
             flags+='+A'
         
         if val_amount!=0:
-            
-            print(get_cache)
 
             # RESPOSTA ENCONTRADA NA CACHE
 
-            flags.replace('Q','')
+            flags.replace("Q+","")
             resp=msg.split(',')[0]+','+flags+',0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
             if len(get_cache) > 0:
                 for l in get_cache:
                     resp += l+',\n'
                 resp = resp[:-2]
-            resp += ';'
+            resp += ';\n'
             if len(auto_cache) > 0:
                 for l in auto_cache:
                     resp += l+',\n'
                 resp = resp[:-2]
-            resp += ';'
+            resp += ';\n'
             if len(extra_cache) > 0:
                 for l in extra_cache:
                     resp += l+',\n'
                 resp = resp[:-2]
-            resp += ';'
+            resp += ';\n'
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
             return
@@ -227,7 +253,7 @@ class Server:
 
         if 'A' in msg.split(',')[1]:
             print('not first server, returning error')
-            flags.replace('Q','')
+            flags.replace("Q+","")
             error=1
             if len(auto_cache)+len(extra_cache) == 0:
                 error=2
@@ -244,8 +270,10 @@ class Server:
         for i in range(len(doms)):
             doms[i]=('.'.join(doms[i:])+'.')
         doms.reverse()
+        doms+=doms[-1]
 
         to_try = self.top_servers
+        print(to_try)
 
         while len(doms)>0:
             dom = doms.pop(0)
@@ -254,15 +282,17 @@ class Server:
             server = 0
             while server < len(to_try):
                 try:
-                    udp_sock.sendto((','.join(msg.split(',')[0]+flags+msg.split(';')[0].split(',')[2:])+';'+dom+','+msg.split(';')[1].split(',')[1]+';').encode(), to_try[server])
-                    udp_sock.settimeout(5)
+                    print('talkin to server: '+to_try[server][0]+':'+str(to_try[server][1]))
+                    udp_sock.sendto((','.join(msg.split(',')[0]+flags+msg.split(';')[0].split(',')[2:])+';'+dom+','+msg.split(';')[1].split(',')[1]+';').encode(), (to_try[server][0], to_try[server][1]))
+                    udp_sock.settimeout(10)
                     self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
+                    bytes = udp_sock.recvfrom(self.udp_buffer)
                     break
-                except:
+                except socket.timeout:
+                    print('server not responding')
                     server += 1
 
             if server != len(to_try):
-                bytes = udp_sock.recvfrom(self.udp_buffer)
                 res = bytes[0].decode()
                 self.write_log(self.domain, 'RR', self.to_try[server], res.replace('\n', '\\\\'))
                 auto_amount = int(res.split(',')[4])
@@ -285,42 +315,42 @@ class Server:
                     
 
         if val_amount==0:
-            flags.replace('Q','')
+            flags.replace("Q+","")
             error=1
             if len(auto_cache)+len(extra_cache) == 0:
                 error=2
-            resp=msg.split(',')[0]+','+flags+','+error+','+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
-            resp+= ';'
+            resp=msg.split(',')[0]+','+flags+','+str(error)+','+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
+            resp+= ';\n'
             if len(auto_cache)>0:
                 for l in auto_cache:
                     resp += l+',\n'
                 resp=resp[:-2]
-            resp+= ';'
+            resp+= ';\n'
             if len(extra_cache)>0:
                 for l in extra_cache:
                     resp += l+',\n'
                 resp=resp[:-2]
-            resp+= ';'
+            resp+= ';\n'
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
         else:
-            flags.replace('Q','')
+            flags.replace("Q+","")
             resp=msg.split(',')[0]+','+flags+',0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
             if len(get_cache)>0:
                 for l in get_cache:
                     resp += l+',\n'
                 resp=resp[:-2]
-            resp+= ';'
+            resp+= ';\n'
             if len(auto_cache)>0:
                 for l in auto_cache:
                     resp += l+',\n'
                 resp=resp[:-2]
-            resp+= ';'
+            resp+= ';\n'
             if len(extra_cache)>0:
                 for l in extra_cache:
                     resp += l+',\n'
                 resp=resp[:-2]
-            resp+= ';'
+            resp+= ';\n'
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
 
@@ -349,7 +379,7 @@ def main(args):
     elif(server_info['TYPE']=='SR'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SERVERS'])
         server.write_log('all', 'SR', ('127.0.01',0), str(port)+' '+str(default_ttl)+' '+debug)
-    if(server_info['TYPE']=='SP'):
+    if(server_info['TYPE']=='ST'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.accept_clients()

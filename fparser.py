@@ -48,9 +48,9 @@ def parse_config(file):
                         dic['DD'] = [(ip[0],int(ip[1]))]
                 elif list[1]=='ST':
                     if list[1] in dic:
-                        dic['ST'].append((list[0],list[2]))
+                        dic['ST'].append(parse_STdb(list[2]))
                     else:
-                        dic['ST'] = [(list[0],list[2])]
+                        dic['ST'] = parse_STdb(list[2])
                 elif list[1]=='LG':
                     if 'ADDRESS' not in dic:
                         dic['ADDRESS'] = list[0].split(':')[0]
@@ -62,6 +62,22 @@ def parse_config(file):
                         dic['LG'].append((list[0],list[2]))
                     else:
                         dic['LG'] = [(list[0],list[2])]
+    return dic
+
+def parse_STdb(file):
+    dic = []
+    f = open(file, 'r')
+    lines = f.readlines()
+    for line in lines:
+        if line=='\n' or line=='\r' or line[0]=='#' or line.startswith('#'):
+            continue
+        else:
+            list = line.split(' ')
+            list[0] = list[0].replace('\n', '')
+            ip = list[0].split(':')
+            if len(ip) == 1:
+                ip.append(53)
+            dic.append((ip[0],int(ip[1])))
     return dic
 
 # Método usado para fazer o parser de um ficheiro de dados
