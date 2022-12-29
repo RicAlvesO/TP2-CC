@@ -1,6 +1,6 @@
 #Ficheiro de base de dados do subdominio bastuco.cam.
 
-bastuco.cam. SOASP Servidor1.bastuco.cam. 86400 3600 #
+bastuco.cam. SOASP ns1.bastuco.cam. 86400 3600 #
 bastuco.cam. SOAADMIN dns\.admin.bastuco.cam. 86400 3600 #
 bastuco.cam. SOASERIAL 0117102022 86400 3600 #
 bastuco.cam. SOAREFRESH 14400 86400 3600 #

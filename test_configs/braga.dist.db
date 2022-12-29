@@ -1,6 +1,6 @@
 #Ficheiro de base de dados do subdominio braga.dist.
 
-braga.dist. SOASP Servidor1.braga.dist. 86400 3600 #
+braga.dist. SOASP ns1.braga.dist. 86400 3600 #
 braga.dist. SOAADMIN dns\.admin.braga.dist. 86400 3600 #
 braga.dist. SOASERIAL 0117102022 86400 3600 #
 braga.dist. SOAREFRESH 14400 86400 3600 #

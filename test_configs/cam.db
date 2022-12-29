@@ -1,7 +1,7 @@
 #Ficheiro de base de dados do dominio cam.
 #Inclui um apontador para o SP do subdominio bastuco.cam.
 
-cam. SOASP Servidor1.cam. 86400 3600 #
+cam. SOASP ns1.cam. 86400 3600 #
 cam. SOAADMIN dns\.admin.cam. 86400 3600 #
 cam. SOASERIAL 0117102022 86400 3600 #
 cam. SOAREFRESH 14400 86400 3600 #

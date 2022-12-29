@@ -36,7 +36,7 @@ class Server:
         self.cache = cache.Cache(default_ttl)
 
 
-        if stype=='SP': 
+        if stype=='SP' or stype=='ST': 
             self.database = database
             self.cache.insert_DB(database[0])
             self.tcp_socket.bind((address,port))
@@ -73,10 +73,12 @@ class Server:
 
     # Método usado para aceitar os clientes e ser permitido a execução de queries
     def accept_clients(self):
+        print("Server is running...")
         while True:
             bytes = self.udp_socket.recvfrom(self.udp_buffer)
             message=bytes[0].decode()
             address=bytes[1]
+            print("Received message: " + message)
             threading.Thread(target=self.handle_querys, args=(message, address), daemon=True).start()
             
     # Método usado para aceitar um Servidor Secundário
@@ -153,6 +155,8 @@ class Server:
         if len(msg) <= 0:
             return
 
+        print(msg)
+
         #PROCURA DA RESPOSTA NA CACHE
 
         get_cache = self.fetch_db(msg.split(';')[1].split(',')[0],msg.split(';')[1].split(',')[1])
@@ -161,10 +165,12 @@ class Server:
         get_cache = get_cache[0]
         val_amount = len(get_cache)
         flags = msg.split(',')[1]
-        if not flags.contains('A'):
+        if 'A' not in flags:
             flags+='+A'
         
         if val_amount!=0:
+            
+            print(get_cache)
 
             # RESPOSTA ENCONTRADA NA CACHE
 
@@ -189,8 +195,10 @@ class Server:
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
             return
         
-        elif self.stype=='SR' and not msg.split(',')[1].contains('A'):
-        
+        elif self.stype=='SR' and 'A' not in msg.split(',')[1]:
+            
+            print('sr no cache')
+
             # RESPOSTA NAO ESTA NA CACHE E SERVIDOR É SR LOGO PERGUNTA AO SERVER DEFAULT
         
             udp_sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -215,7 +223,10 @@ class Server:
                     self.write_log(self.domain, 'RE', address,resp.replace('\n','\\\\'))
                     return
 
-        if msg.split(',')[1].contains('A'):
+        print('no cache, no default')
+
+        if 'A' in msg.split(',')[1]:
+            print('not first server, returning error')
             flags.replace('Q','')
             error=1
             if len(auto_cache)+len(extra_cache) == 0:
@@ -238,6 +249,7 @@ class Server:
 
         while len(doms)>0:
             dom = doms.pop(0)
+            print('checking domain: '+dom)
             udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             server = 0
             while server < len(to_try):
@@ -337,6 +349,9 @@ def main(args):
     elif(server_info['TYPE']=='SR'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SERVERS'])
         server.write_log('all', 'SR', ('127.0.01',0), str(port)+' '+str(default_ttl)+' '+debug)
+    if(server_info['TYPE']=='SP'):
+        server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
+        server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.accept_clients()
 
 

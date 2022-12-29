@@ -1,0 +1,24 @@
+#Ficheiro de base de dados dos ST
+
+root. SOASP ns1.root. 86400 3600 #
+root. SOASP ns2.root. 86400 3600 #
+root. SOAADMIN dns\.admin.root. 86400 3600 #
+root. SOASERIAL 0117102022 86400 3600 #
+root. SOAREFRESH 14400 86400 3600 #
+root. SOARETRY 3600 86400 3600 #
+root. SOAEXPIRE 604800 86400 3600 #
+
+root. NS ns1.root. 86400 3600
+root. NS ns2.root. 86400 3600
+cam. NS sdt.cam. 86400 3600
+dist. NS sdt.dist. 86400 3600
+
+ns1.root. A 10.1.1.10 86400 3600
+ns2.root. A 10.3.3.10 86400 3600
+sdt.cam. A 10.2.2.1 86400 3600
+sdt.dist. A 10.3.3.1 86400 3600
+
+st1.root. CNAME ns1.root. 86400 3600
+st2.root. CNAME ns2.root. 86400 3600
+sp.cam. CNAME sdt.cam. 86400 3600
+sp.dist. CNAME sdt.dist. 86400 3600
