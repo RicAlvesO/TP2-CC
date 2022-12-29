@@ -122,7 +122,7 @@ class Entry:
         self.state = state
 
     def __str__(self):
-        return str(self.name+','+self.type+','+self.value+','+str(self.ttl)+','+str(self.priority))
+        return str(self.name+' '+self.type+' '+self.value+' '+str(self.ttl)+' '+str(self.priority))
 
 
 def main():
