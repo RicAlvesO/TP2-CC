@@ -1,0 +1,19 @@
+#Ficheiro de base de dados do dominio 10.in-addr.reverse.
+
+10.in-addr.reverse. SOASP ns1.10.in-addr.reverse. 86400 3600 #
+10.in-addr.reverse. SOAADMIN dns\.admin.10.in-addr.reverse. 86400 3600 #
+10.in-addr.reverse. SOASERIAL 0117102022 86400 3600 #
+10.in-addr.reverse. SOAREFRESH 14400 86400 3600 #
+10.in-addr.reverse. SOARETRY 3600 86400 3600 #
+10.in-addr.reverse. SOAEXPIRE 604800 86400 3600 #
+
+?.?.?.?.in-addr.reverse PTR sp.cam. 86400 3600
+?.?.?.?.in-addr.reverse PTR sp.bastuco.cam. 86400 3600
+?.?.?.?.in-addr.reverse PTR sp.dist. 86400 3600
+?.?.?.?.in-addr.reverse PTR sp.braga.dist. 86400 3600
+
+10.in-addr.reverse. NS ns1.10.in-addr.reverse. 86400 3600
+
+ns1.10.in-addr.reverse. A ??? 86400 3600
+
+sp.10.in-addr.reverse. CNAME ns1.10.in-addr.reverse. 86400 3600

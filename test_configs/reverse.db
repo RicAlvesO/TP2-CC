@@ -1,0 +1,19 @@
+#Ficheiro de base de dados do dominio reverse.
+#Inclui um apontador para o SP do subdominio in-addr.reverse.
+
+reverse. SOASP ns1.reverse. 86400 3600 #
+reverse. SOAADMIN dns\.admin.reverse. 86400 3600 #
+reverse. SOASERIAL 0117102022 86400 3600 #
+reverse. SOAREFRESH 14400 86400 3600 #
+reverse. SOARETRY 3600 86400 3600 #
+reverse. SOAEXPIRE 604800 86400 3600 #
+
+reverse. NS ns1.reverse. 86400 3600
+
+in-addr.reverse. NS sp.in-addr.reverse. 86400 3600
+
+ns1.reverse. A ??? 86400 3600 
+
+in-addr.reverse. A ??? 86400 3600
+
+sp.reverse. CNAME ns1.reverse. 86400 3600
