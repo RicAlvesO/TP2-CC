@@ -4,8 +4,9 @@ import sys
 import threading
 import time
 
-import fparser
 import cache
+import fparser
+
 
 # Classe para representar um Servidor Primário
 class Server:
@@ -36,7 +37,7 @@ class Server:
         self.cache = cache.Cache(default_ttl)
 
 
-        if stype=='SP' or stype=='ST': 
+        if stype=='SP' or stype=='ST' or stype=='SDT': 
             self.database = database
             self.cache.insert_DB(database[0])
             self.tcp_socket.bind((address,port))
@@ -114,12 +115,12 @@ class Server:
                         if ack.decode() == "OK":
                             i=5
                         i+=1
-            self.write_log(self.domain, 'ZT',address, 'SP')
+            self.write_log(self.domain, 'ZT',address, self.stype)
         elif dom.decode()==self_domain[0] and int(serial.decode())==self.cache.get_serial():
-            self.write_log(self.domain, 'EZ',address, 'SP')
+            self.write_log(self.domain, 'EZ',address, self.stype)
             socket.send("0".encode())
         else:
-            self.write_log(self.domain, 'EZ',address, 'SP')
+            self.write_log(self.domain, 'EZ',address, self.stype)
             socket.send("-1".encode())
 
 
@@ -241,6 +242,66 @@ class Server:
                     self.udp_socket.sendto(resp.encode(),address)
                     self.write_log(self.domain, 'RE', address,resp.replace('\n','\\\\'))
                     return
+        elif msg.split(';')[1].split(',')[1] == 'PTR':
+            to_try = self.top_servers
+            udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            server = 0
+            while server < len(to_try):
+                try:
+                    udp_sock.sendto((msg.split(',')[0]+',Q,0,0,0,0;reverse.,NS').encode(), (to_try[server][0], int(to_try[server][1])))
+                    udp_sock.settimeout(10)
+                    self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
+                    bytes = udp_sock.recvfrom(self.udp_buffer)
+                    break
+                except socket.timeout:
+                    server += 1
+            
+            if server != len(to_try):
+                res = bytes[0].decode().replace('\n','')
+                self.write_log(self.domain, 'RR', to_try[server], res.replace('\n', '\\\\'))
+                val_amount = int(res.split(',')[3])
+                auto_amount = int(res.split(',')[4])
+                extra_amount = int(res.split(';')[0].split(',')[5])
+                if auto_amount+extra_amount > 0:
+                    self.cache.insert_cache(res)
+                    to_try = []
+                    find=[]
+                    for i in range(auto_amount):
+                        if res.split(';')[3].split(',')[i].split(' ')[1] == 'NS':
+                            find.append(res.split(';')[3].split(',')[i].split(' ')[2])
+                    for i in range(extra_amount):
+                        if res.split(';')[4].split(',')[i].split(' ')[0] in find:
+                            net = res.split(';')[4].split(',')[i].split(' ')[2]
+                            ip = net.split(':')
+                            if len(ip) == 1:
+                                to_try.append((net,53))
+                            else:
+                                to_try.append((ip[0],int(ip[1])))
+                    get_cache = res.split(';')[2].split(',')
+                    auto_cache = res.split(';')[3].split(',')
+                    extra_cache = res.split(';')[4].split(',')
+                else:
+                    doms=[]
+                    return
+            else: return
+
+            server = 0
+            while server < len(to_try):
+                try:
+                    udp_sock.sendto((msg.split(',')[0]+',Q,0,0,0,0;'+msg.split(';')[1].split(',')[0]+',PTR').encode(), (to_try[server][0], int(to_try[server][1])))
+                    udp_sock.settimeout(10)
+                    self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
+                    bytes = udp_sock.recvfrom(self.udp_buffer)
+                    break
+                except socket.timeout:
+                    server += 1
+            if server == len(to_try):
+                return
+            resp=bytes[0].decode()
+            self.udp_socket.sendto(resp.encode(),address)
+            self.write_log(self.domain, 'RE', address, resp.replace('\n','\\\\'))
+            return
+
 
         if 'A' in msg.split(',')[1]:
             flags.replace("Q+","")
@@ -373,7 +434,7 @@ def main(args):
         default_ttl=int(args[3])
     if len(args)>4 and args[4]=="shy":
         debug='shy'
-    if(server_info['TYPE']=='SP'):
+    if(server_info['TYPE']=='SP' or server_info['TYPE']=='ST' or server_info['TYPE']=='SDT'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
         threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()

@@ -17,3 +17,6 @@ ns1.reverse. A ??? 86400 3600
 in-addr.reverse. A ??? 86400 3600
 
 sp.reverse. CNAME ns1.reverse. 86400 3600
+
+##EXEMPLO
+10.0.0.1 PTR bastuco.cam.
