@@ -30,3 +30,13 @@ Exemplo:
 ```bash
 python3 dnssp.py ./test_configs/Bastuco.config 53 8640 debug
 ```
+
+## Autoria
+
+Realizado por:
+* Ricardo Alves Oliveira (A96794)
+* Rodrigo José Teixeira Freita (A96547)
+
+Data da Última Versão:
+02-01-2023
+
