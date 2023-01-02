@@ -1,36 +1,36 @@
 #Ficheiro de base de dados do dominio cam.
 #Inclui um apontador para o SP do subdominio bastuco.cam.
 
-cam. SOASP ns1.cam. 86400 3600 #
-cam. SOAADMIN dns\.admin.cam. 86400 3600 #
-cam. SOASERIAL 0117102022 86400 3600 #
-cam. SOAREFRESH 14400 86400 3600 #
-cam. SOARETRY 3600 86400 3600 #
-cam. SOAEXPIRE 604800 86400 3600 #
+cam. SOASP ns1.cam. 86400 250
+cam. SOAADMIN dns\.admin.cam. 86400 250
+cam. SOASERIAL 0117102021 86400 250
+cam. SOAREFRESH 10 86400 250
+cam. SOARETRY 10 86400 250
+cam. SOAEXPIRE 1800 86400 250
 
-cam. NS ns1.cam. 86400 3600
-cam. NS ns2.cam. 86400 3600
-cam. NS ns3.cam. 86400 3600
+cam. NS ns1.cam. 86400 250
+cam. NS ns2.cam. 86400 250
+cam. NS ns3.cam. 86400 250
 
-bastuco.cam. NS sp.bastuco.cam. 86400 3600
+bastuco.cam. NS sp.bastuco.cam. 86400 250
 
-cam. MX mx1.cam. 86400 10 #
-cam. MX mx2.cam. 86400 20 #
+cam. MX mx1.cam. 86400 250
+cam. MX mx2.cam. 86400 250
 
-ns1.cam. A 10.2.2.1 86400 3600
-ns2.cam. A 10.3.3.2 86400 3600
-ns3.cam. A 10.2.2.3 86400 3600
+ns1.cam. A 10.2.2.1 86400 250
+ns2.cam. A 10.3.3.2 86400 250
+ns3.cam. A 10.2.2.3 86400 250
 
-sp.bastuco.cam. A 10.1.1.1 86400 3600
+sp.bastuco.cam. A 10.1.1.1 86400 250
 
-mx1.cam. A 10.1.1.1 86400 3600 #
-mx2.cam. A 10.1.1.2 86400 3600 #
-www.cam. A 10.3.3.2 86400 200 #
-www.cam. A 10.1.1.3 86400 200 #
-ftp.cam. A 10.3.3.1 86400 3600 #
+mx1.cam. A 10.1.1.1 86400 250
+mx2.cam. A 10.1.1.2 86400 250
+www.cam. A 10.3.3.2 86400 250
+www.cam. A 10.1.1.3 86400 250
+ftp.cam. A 10.3.3.1 86400 250
 
-sp.cam. CNAME ns1.cam. 86400 3600
-ss1.cam. CNAME ns2.cam. 86400 3600
-ss2.cam. CNAME ns3.cam. 86400 3600
-mail1.cam. CNAME mx1.cam. 86400 3600 #
-mail2.cam. CNAME mx2.cam. 86400 3600 #
+sp.cam. CNAME ns1.cam. 86400 250
+ss1.cam. CNAME ns2.cam. 86400 250
+ss2.cam. CNAME ns3.cam. 86400 250
+mail1.cam. CNAME mx1.cam. 86400 250
+mail2.cam. CNAME mx2.cam. 86400 250

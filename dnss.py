@@ -46,6 +46,7 @@ class Server:
         elif stype=='SS':
             self.last_update = -1
             self.primary_server = primary_server
+            self.default_servers = primary_server
 
         elif stype=='SR':
             self.default_servers = default_servers
@@ -101,8 +102,9 @@ class Server:
     # address: Endereço IP usado
     def copy_cache(self, socket, self_domain, address):
         dom = socket.recv(1024)
+        socket.send("OK".encode())
         serial = socket.recv(1024)
-        if dom.decode()==self_domain[0] and int(serial.decode())!=self.cache.get_serial():
+        if dom.decode()==self_domain and int(serial.decode())!=self.cache.get_serial():
             llist=self.copy_for_domain(dom.decode())
             socket.send(str(len(llist)).encode())
             ack=socket.recv(1024)
@@ -124,32 +126,49 @@ class Server:
             socket.send("-1".encode())
 
 
-    def cache_update(self, primary_server):
-        self.receive_cache(primary_server)
+    def cache_update(self, adress,port):
+        primary_server=(adress,port)
         updated=True
+        self.last_update=time.time()
         while True:
-            time.sleep(self.cache.get_refesh())
+            time.sleep(self.cache.get_refresh())
             updated=False
             while not updated:
                 i=self.receive_cache(primary_server)
                 if i>=0:
                     self.last_update=time.time()
                     updated=True
+                    self.last_update=time.time()
                 else:
                     time.sleep(self.cache.get_retry())
         
         
     # Método usado para copiar a cache de um servidor para um outro
     # primary_server: Servidor Primário que terá a cache copiada
-    def receive_cache(self, primary_server):
-        self.tcp_socket.connect(primary_server)
+    def receive_cache(self, primary_server, first=False):
+        try:
+            self.tcp_socket.connect(primary_server)
+        except:
+            self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.write_log(self.domain, 'EZ',primary_server, 'SP')
+            return -1
         self.tcp_socket.sendall(self.domain.encode())
-        self.tcp_socket.sendall((str(self.cache.get_serial())).encode())
+        if self.tcp_socket.recv(1024).decode()!="OK":
+            self.tcp_socket.shutdown(socket.SHUT_RDWR)
+            self.tcp_socket.close()
+            self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.write_log(self.domain, 'EZ',primary_server, 'SP')
+            return -1
+        if first:
+            self.tcp_socket.sendall("0".encode())
+        else:
+            self.tcp_socket.sendall((str(self.cache.get_serial())).encode())
         size=int(self.tcp_socket.recv(1024).decode())
         if size==-1:
             self.write_log(self.domain, 'EZ',primary_server, 'SP')
             self.tcp_socket.shutdown(socket.SHUT_RDWR)
             self.tcp_socket.close()
+            self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             return -1
         self.tcp_socket.sendall("OK".encode())
         while size>0:
@@ -159,6 +178,7 @@ class Server:
             size-=1
         self.tcp_socket.shutdown(socket.SHUT_RDWR)
         self.tcp_socket.close()
+        self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.write_log(self.domain, 'ZT',primary_server, 'SS')
         return 0
 
@@ -223,19 +243,20 @@ class Server:
         
             udp_sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             server = 0
-            while server < len(self.default_server):
+            while server < len(self.default_servers):
+                msgf=msg.split(',')[0]+','+flags+','+','.join(msg.split(';')[0].split(',')[2:])+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';'
                 try:
-                    udp_sock.sendto((','.join(msg.split(',')[0]+flags+msg.split(';')[0].split(',')[2:])+';'+msg.split(';')[1].split(',')[1]+';').encode(), self.default_server[server])
-                    udp_sock.settimeout(5)
-                    self.write_log(self.domain, 'QE', self.default_server[server], msg[:-1])
+                    udp_sock.sendto((msgf).encode(), (self.default_servers[server][0], int(self.default_servers[server][1])))
+                    udp_sock.settimeout(3600)
+                    self.write_log(self.domain, 'QE', self.default_servers[server], msg[:-1])
                     break
                 except:
                     server+=1
             
-            if server != len(self.default_server):
+            if server != len(self.default_servers):
                 bytes = udp_sock.recvfrom(self.udp_buffer)
                 resp = bytes[0].decode()
-                self.write_log(self.domain, 'RR', self.default_server[server],resp.replace('\n','\\\\'))
+                self.write_log(self.domain, 'RR', self.default_servers[server],resp.replace('\n','\\\\'))
                 val_amount=int(resp.split(',')[3])
                 if val_amount > 0 :
                     self.cache.insert_cache(resp)
@@ -249,13 +270,14 @@ class Server:
             while server < len(to_try):
                 try:
                     udp_sock.sendto((msg.split(',')[0]+',Q,0,0,0,0;reverse.,NS').encode(), (to_try[server][0], int(to_try[server][1])))
-                    udp_sock.settimeout(10)
+                    udp_sock.settimeout(3600)
                     self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
                     bytes = udp_sock.recvfrom(self.udp_buffer)
                     break
                 except socket.timeout:
                     server += 1
-            
+
+
             if server != len(to_try):
                 res = bytes[0].decode().replace('\n','')
                 self.write_log(self.domain, 'RR', to_try[server], res.replace('\n', '\\\\'))
@@ -289,7 +311,7 @@ class Server:
             while server < len(to_try):
                 try:
                     udp_sock.sendto((msg.split(',')[0]+',Q,0,0,0,0;'+msg.split(';')[1].split(',')[0]+',PTR').encode(), (to_try[server][0], int(to_try[server][1])))
-                    udp_sock.settimeout(10)
+                    udp_sock.settimeout(3600)
                     self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
                     bytes = udp_sock.recvfrom(self.udp_buffer)
                     break
@@ -345,7 +367,7 @@ class Server:
             while server < len(to_try):
                 try:
                     udp_sock.sendto((','.join([msg.split(',')[0]]+[flags]+msg.split(';')[0].split(',')[2:])+';'+dom+','+msg.split(';')[1].split(',')[1]+';').encode(), (to_try[server][0], int(to_try[server][1])))
-                    udp_sock.settimeout(10)
+                    udp_sock.settimeout(3600)
                     self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
                     bytes = udp_sock.recvfrom(self.udp_buffer)
                     break
@@ -434,19 +456,19 @@ def main(args):
         default_ttl=int(args[3])
     if len(args)>4 and args[4]=="shy":
         debug='shy'
-    if(server_info['TYPE']=='SP' or server_info['TYPE']=='ST' or server_info['TYPE']=='SDT'):
+    if(server_info['TYPE']=='SP' or server_info['TYPE']=='SDT'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
         threading.Thread(target=server.accept_ss, args=(server_info['SS'],server_info['ADDRESS']), daemon=True).start()
     elif(server_info['TYPE']=='SS'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, primary_server=server_info['SP'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
-        server.receive_cache(server.primary_server[0])
-        threading.Thread(target=server.cache_update, args=(server.primary_server[0]), daemon=True).start()
+        server.receive_cache(server.primary_server[0],first=True)
+        threading.Thread(target=server.cache_update, args=(server.primary_server[0][0],server.primary_server[0][1]), daemon=True).start()
     elif(server_info['TYPE']=='SR'):
-        server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SERVERS'])
+        server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, default_servers=server_info['SP'])
         server.write_log('all', 'SR', ('127.0.01',0), str(port)+' '+str(default_ttl)+' '+debug)
-    if(server_info['TYPE']=='ST'):
+    elif(server_info['TYPE']=='ST'):
         server = Server(server_info['TYPE'],server_info['DD'][0][0],port, server_info['ADDRESS'],server_info['LG'], server_info['ST'], default_ttl, debug, database=server_info['DB'])
         server.write_log('all', 'ST', ('127.0.0.1',0), str(port)+' '+str(default_ttl)+' '+debug)
     server.accept_clients()

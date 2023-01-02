@@ -23,14 +23,14 @@ class Cache:
                 self.entrys[self.search_available()] = Entry(ind,list[0],list[1],list[2],list[3],list[4][:-1],'FILE',True)
         
     def insert_cache(self,string):
-        list = string.split(',')
+        list = string.split(' ')
         if self.search_available() != -1:
             ind = self.search_available()
-            self.entrys[ind] = Entry(ind,list[0],list[1],list[2],list[3],list[3],'OTHERS',True)
+            self.entrys[ind] = Entry(ind,list[0],list[1],list[2],list[3],list[4],'OTHERS',True)
         else:
             self.remove_entry_last()
             ind = self.search_available()
-            self.entrys[ind] = Entry(ind,list[0],list[1],list[2],list[3],list[3],'OTHERS',True)
+            self.entrys[ind] = Entry(ind,list[0],list[1],list[2],list[3],list[4],'OTHERS',True)
 
     def remove_entry_last(self):
         for entry in self.entrys:
@@ -101,7 +101,7 @@ class Cache:
             if entry.type == 'SOAREFRESH':
                 num = entry.value
                 break
-        return num
+        return int(num)
 
     def get_serial(self):
         num = 0
@@ -109,7 +109,7 @@ class Cache:
             if entry.type == 'SOASERIAL':
                 num = entry.value
                 break
-        return num
+        return int(num)
 
     def get_retry(self):
         num = 0
@@ -117,7 +117,7 @@ class Cache:
             if entry.type == 'SOARETRY':
                 num = entry.value
                 break
-        return num
+        return int(num)
     
     def get_expire(self):
         num = 0
@@ -125,7 +125,7 @@ class Cache:
             if entry.type == 'SOAEXPIRE':
                 num = entry.value
                 break
-        return num
+        return int(num)
 
     def __str__(self):
         string = ''
