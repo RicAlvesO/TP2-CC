@@ -216,7 +216,7 @@ class Server:
 
             # RESPOSTA ENCONTRADA NA CACHE
 
-            flags.replace("Q+","")
+            flags=flags[2:]
             resp=msg.split(',')[0]+','+flags+',0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
             if len(get_cache) > 0:
                 for l in get_cache:
@@ -247,7 +247,7 @@ class Server:
                 msgf=msg.split(',')[0]+','+flags+','+','.join(msg.split(';')[0].split(',')[2:])+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';'
                 try:
                     udp_sock.sendto((msgf).encode(), (self.default_servers[server][0], int(self.default_servers[server][1])))
-                    udp_sock.settimeout(3600)
+                    udp_sock.settimeout(10)
                     self.write_log(self.domain, 'QE', self.default_servers[server], msg[:-1])
                     break
                 except:
@@ -259,14 +259,14 @@ class Server:
                 self.write_log(self.domain, 'RR', self.default_servers[server],resp.replace('\n','\\\\'))
                 val_amount=int(resp.split(',')[3])
                 if val_amount > 0 :
-                    self.cache.insert_cache(resp)
+                    self.cache.insert_response(resp)
                     self.udp_socket.sendto(resp.encode(),address)
                     self.write_log(self.domain, 'RE', address,resp.replace('\n','\\\\'))
                     return
 
 
         if 'A' in msg.split(',')[1]:
-            flags.replace("Q+","")
+            flags=flags[2:]
             error=1
             if len(auto_cache)+len(extra_cache) == 0:
                 error=2
@@ -311,7 +311,7 @@ class Server:
             while server < len(to_try):
                 try:
                     udp_sock.sendto((','.join([msg.split(',')[0]]+[flags]+msg.split(';')[0].split(',')[2:])+';'+dom+','+msg.split(';')[1].split(',')[1]+';').encode(), (to_try[server][0], int(to_try[server][1])))
-                    udp_sock.settimeout(3600)
+                    udp_sock.settimeout(10)
                     self.write_log(self.domain, 'QE', to_try[server], msg[:-1])
                     bytes = udp_sock.recvfrom(self.udp_buffer)
                     break
@@ -324,8 +324,8 @@ class Server:
                 val_amount = int(res.split(',')[3])
                 auto_amount = int(res.split(',')[4])
                 extra_amount = int(res.split(';')[0].split(',')[5])
-                if auto_amount+extra_amount > 0:
-                    self.cache.insert_cache(res)
+                if auto_amount+extra_amount+val_amount > 0:
+                    self.cache.insert_response(res)
                     to_try = []
                     find=[]
                     for i in range(auto_amount):
@@ -347,7 +347,7 @@ class Server:
                     
 
         if val_amount==0:
-            flags.replace("Q+","")
+            flags=flags[2:]
             error=1
             if len(auto_cache)+len(extra_cache) == 0:
                 error=2
@@ -366,7 +366,7 @@ class Server:
             self.udp_socket.sendto(resp[:-1].encode(),address)
             self.write_log(self.domain, 'RE', address, resp[:-2].replace('\n','\\\\'))
         else:
-            flags.replace("Q+","")
+            flags=flags[2:]
             resp=msg.split(',')[0]+','+flags+',0,'+str(len(get_cache))+','+str(len(auto_cache))+','+str(len(extra_cache))+';'+msg.split(';')[1].split(',')[0]+','+msg.split(';')[1].split(',')[1]+';\n'
             if len(get_cache)>0:
                 for l in get_cache:

@@ -127,6 +127,20 @@ class Cache:
                 break
         return int(num)
 
+    def insert_response(self,response):
+        response = response.replace('\n','')
+        response = response.split(';')
+        lista = []
+        for r in response[2].split(','):
+            lista.append(r)
+        for r in response[3].split(','):
+            lista.append(r)
+        for r in response[4].split(','):
+            lista.append(r)
+        for l in lista:
+            if l != '':
+                self.insert_cache(l)
+
     def __str__(self):
         string = ''
         for entry in self.entrys:

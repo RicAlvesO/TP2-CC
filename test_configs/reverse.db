@@ -10,7 +10,7 @@ reverse. SOAEXPIRE 1800 86400 250
 
 reverse. NS ns1.reverse. 86400 250
 
-in-addr.reverse. NS sp.in-addr.reverse. 86400 250
+in-addr.reverse. NS in-addr.reverse. 86400 250
 
 ns1.reverse. A 10.4.4.11 86400 250 
 

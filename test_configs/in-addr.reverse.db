@@ -10,10 +10,10 @@ in-addr.reverse. SOAEXPIRE 1800 86400 250
 
 in-addr.reverse. NS ns1.in-addr.reverse. 86400 250
 
-10.in-addr.reverse. NS sp.10.in-addr.reverse. 86400 250
+10.in-addr.reverse. NS 10.in-addr.reverse. 86400 250
 
 ns1.in-addr.reverse. A 10.4.4.12 86400 250 
 
-10.in-addr.reverse. A 10.4.4.11 86400 250
+10.in-addr.reverse. A 10.4.4.13 86400 250
 
 sp.in-addr.reverse. CNAME ns1.in-addr.reverse. 86400 250

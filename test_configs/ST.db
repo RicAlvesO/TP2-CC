@@ -12,11 +12,13 @@ root. NS ns1.root. 86400 250
 root. NS ns2.root. 86400 250
 cam. NS sdt.cam. 86400 250
 dist. NS sdt.dist. 86400 250
+reverse. NS sdt.reverse. 86400 250
 
 ns1.root. A 10.1.1.10 86400 250
 ns2.root. A 10.3.3.10 86400 250
 sdt.cam. A 10.2.2.1 86400 250
 sdt.dist. A 10.3.3.1 86400 250
+sdt.reverse. A 10.4.4.11 86400 250
 
 st1.root. CNAME ns1.root. 86400 250
 st2.root. CNAME ns2.root. 86400 250
