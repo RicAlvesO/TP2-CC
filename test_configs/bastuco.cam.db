@@ -20,8 +20,8 @@ ns3.bastuco.cam. A 10.4.4.2 86400 250
 
 mx1.bastuco.cam. A 10.1.1.1 86400 250
 mx2.bastuco.cam. A 10.1.1.2 86400 250
-www.bastuco.cam. A 10.3.3.2 86400 200 #
-www.bastuco.cam. A 10.1.1.3 86400 200 #
+www.bastuco.cam. A 10.3.3.2 86400 250
+www.bastuco.cam. A 10.1.1.3 86400 250
 ftp.bastuco.cam. A 10.3.3.1 86400 250
 
 sp.bastuco.cam. CNAME ns1.bastuco.cam. 86400 250

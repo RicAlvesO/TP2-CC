@@ -1,19 +1,34 @@
 #Ficheiro de base de dados do dominio 10.in-addr.reverse.
 
-10.in-addr.reverse. SOASP ns1.10.in-addr.reverse. 86400 3600 #
-10.in-addr.reverse. SOAADMIN dns\.admin.10.in-addr.reverse. 86400 3600 #
-10.in-addr.reverse. SOASERIAL 0117102022 86400 3600 #
-10.in-addr.reverse. SOAREFRESH 14400 86400 3600 #
-10.in-addr.reverse. SOARETRY 3600 86400 3600 #
-10.in-addr.reverse. SOAEXPIRE 604800 86400 3600 #
+10.in-addr.reverse. SOASP ns1.10.in-addr.reverse. 86400 250
+10.in-addr.reverse. SOAADMIN dns\.admin.10.in-addr.reverse. 86400 250
+10.in-addr.reverse. SOASERIAL 0117102022 86400 250
+10.in-addr.reverse. SOAREFRESH 3600 86400 250
+10.in-addr.reverse. SOARETRY 3600 86400 250
+10.in-addr.reverse. SOAEXPIRE 1800 86400 250
 
-?.?.?.?.in-addr.reverse PTR sp.cam. 86400 3600
-?.?.?.?.in-addr.reverse PTR sp.bastuco.cam. 86400 3600
-?.?.?.?.in-addr.reverse PTR sp.dist. 86400 3600
-?.?.?.?.in-addr.reverse PTR sp.braga.dist. 86400 3600
+10.2.2.1 PTR sp.cam. 86400 250
+10.2.2.3 PTR ss2.cam 86400 250
+10.3.3.2 PTR ss1.cam 86400 250
+10.1.1.3 PTR sp.bastuco.cam. 86400 250
+10.1.1.1 PTR ss1.bastuco.cam. 86400 250
+10.1.1.2 PTR ss2.bastuco.cam. 86400 250
+10.3.3.1 PTR sp.dist. 86400 250
+10.3.3.3 PTR ss2.dist. 86400 250
+10.2.2.2 PTR ss1.dist. 86400 250
+10.4.4.3 PTR sp.braga.dist. 86400 250
+10.4.4.1 PTR ss1.braga.dist. 86400 250
+10.4.4.2 PTR ss2.braga.dist. 86400 250
+10.1.1.10 PTR st1.root. 86400 250
+10.3.3.10 PTR st2.root. 86400 250
+10.4.4.10 PTR sr.cam. 86400 250
+10.2.2.10 PTR sr.dist. 86400 250
+10.4.4.11 PTR sp.reverse. 86400 250
+10.4.4.12 PTR sp.in-addr.reverse. 86400 250
+10.4.4.13 PTR sp.10.in-addr.reverse. 86400 250
 
-10.in-addr.reverse. NS ns1.10.in-addr.reverse. 86400 3600
+10.in-addr.reverse. NS ns1.10.in-addr.reverse. 86400 250
 
-ns1.10.in-addr.reverse. A ??? 86400 3600
+ns1.10.in-addr.reverse. A 10.4.4.11 86400 250
 
-sp.10.in-addr.reverse. CNAME ns1.10.in-addr.reverse. 86400 3600
+sp.10.in-addr.reverse. CNAME ns1.10.in-addr.reverse. 86400 250

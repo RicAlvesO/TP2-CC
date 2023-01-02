@@ -1,36 +1,36 @@
 #Ficheiro de base de dados do dominio dist.
 #Inclui um apontador para o SP do subdominio braga.dist.
 
-dist. SOASP ns1.dist. 86400 3600 #
-dist. SOAADMIN dns\.admin.dist. 86400 3600 #
-dist. SOASERIAL 0117102022 86400 3600 #
-dist. SOAREFRESH 14400 86400 3600 #
-dist. SOARETRY 3600 86400 3600 #
-dist. SOAEXPIRE 604800 86400 3600 #
+dist. SOASP ns1.dist. 86400 250
+dist. SOAADMIN dns\.admin.dist. 86400 250
+dist. SOASERIAL 0117102022 86400 250
+dist. SOAREFRESH 3600 86400 250
+dist. SOARETRY 3600 86400 250
+dist. SOAEXPIRE 1800 86400 250
 
-dist. NS ns1.dist. 86400 3600
-dist. NS ns2.dist. 86400 3600
-dist. NS ns3.dist. 86400 3600
+dist. NS ns1.dist. 86400 250
+dist. NS ns2.dist. 86400 250
+dist. NS ns3.dist. 86400 250
 
-braga.dist. NS sp.braga.dist. 86400 3600
+braga.dist. NS sp.braga.dist. 86400 250
 
-dist. MX mx1.dist. 86400 10 #
-dist. MX mx2.dist. 86400 20 #
+dist. MX mx1.dist. 86400 250
+dist. MX mx2.dist. 86400 250
 
-ns1.dist. A 10.3.3.1 86400 3600
-ns2.dist. A 10.2.2.2 86400 3600
-ns3.dist. A 10.3.3.3 86400 3600
+ns1.dist. A 10.3.3.1 86400 250
+ns2.dist. A 10.2.2.2 86400 250
+ns3.dist. A 10.3.3.3 86400 250
 
-sp.bastuco.dist. A 10.4.4.3 86400 3600
+sp.bastuco.dist. A 10.4.4.3 86400 250
 
-mx1.dist. A 10.1.1.1 86400 3600 #
-mx2.dist. A 10.1.1.2 86400 3600 #
-www.dist. A 10.3.3.2 86400 200 #
-www.dist. A 10.1.1.3 86400 200 #
-ftp.dist. A 10.3.3.1 86400 3600 #
+mx1.dist. A 10.1.1.1 86400 250
+mx2.dist. A 10.1.1.2 86400 250
+www.dist. A 10.3.3.2 86400 250
+www.dist. A 10.1.1.3 86400 250
+ftp.dist. A 10.3.3.1 86400 250
 
-sp.dist. CNAME ns1.dist. 86400 3600
-ss1.dist. CNAME ns2.dist. 86400 3600
-ss2.dist. CNAME ns3.dist. 86400 3600
-mail1.dist. CNAME mx1.dist. 86400 3600 #
-mail2.dist. CNAME mx2.dist. 86400 3600 #
+sp.dist. CNAME ns1.dist. 86400 250
+ss1.dist. CNAME ns2.dist. 86400 250
+ss2.dist. CNAME ns3.dist. 86400 250
+mail1.dist. CNAME mx1.dist. 86400 250
+mail2.dist. CNAME mx2.dist. 86400 250

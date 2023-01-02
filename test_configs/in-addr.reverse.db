@@ -1,19 +1,19 @@
 #Ficheiro de base de dados do dominio in-addr.reverse.
 #Inclui um apontador para o SP do subdominio 10.in-addr.reverse.
 
-in-addr.reverse. SOASP ns1.in-addr.reverse. 86400 3600 #
-in-addr.reverse. SOAADMIN dns\.admin.in-addr.reverse. 86400 3600 #
-in-addr.reverse. SOASERIAL 0117102022 86400 3600 #
-in-addr.reverse. SOAREFRESH 14400 86400 3600 #
-in-addr.reverse. SOARETRY 3600 86400 3600 #
-in-addr.reverse. SOAEXPIRE 604800 86400 3600 #
+in-addr.reverse. SOASP ns1.in-addr.reverse. 86400 250
+in-addr.reverse. SOAADMIN dns\.admin.in-addr.reverse. 86400 250
+in-addr.reverse. SOASERIAL 0117102022 86400 250
+in-addr.reverse. SOAREFRESH 3600 86400 250
+in-addr.reverse. SOARETRY 3600 86400 250
+in-addr.reverse. SOAEXPIRE 1800 86400 250
 
-in-addr.reverse. NS ns1.in-addr.reverse. 86400 3600
+in-addr.reverse. NS ns1.in-addr.reverse. 86400 250
 
-10.in-addr.reverse. NS sp.10.in-addr.reverse. 86400 3600
+10.in-addr.reverse. NS sp.10.in-addr.reverse. 86400 250
 
-ns1.in-addr.reverse. A ??? 86400 3600 
+ns1.in-addr.reverse. A 10.4.4.12 86400 250 
 
-10.in-addr.reverse. A ??? 86400 3600
+10.in-addr.reverse. A 10.4.4.11 86400 250
 
-sp.in-addr.reverse. CNAME ns1.in-addr.reverse. 86400 3600
+sp.in-addr.reverse. CNAME ns1.in-addr.reverse. 86400 250
