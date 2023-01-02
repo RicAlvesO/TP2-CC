@@ -1,4 +1,12 @@
+# Ficheiro para parsing de ficheiros de configuração e base de dados
+#
+# @Author: Ricardo Alves Oliveira (A96794)
+# @Author: Rodrigo José Teixeira Freita (A96547)
+#
+# @Version: 02012023
+
 import argparse
+
 
 # Método usado para fazer o parser de um ficheiro de configuração
 # file: Ficheiro de configuração 

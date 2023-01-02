@@ -1,7 +1,16 @@
 #!/usr/bin/env python
+
+# Ficheiro principal dos clientes
+#
+# @Author: Ricardo Alves Oliveira (A96794)
+# @Author: Rodrigo José Teixeira Freita (A96547)
+#
+# @Version: 02012023
+
 import random
 import socket
 import sys
+
 
 # Classe para representar um cliente
 class Client:

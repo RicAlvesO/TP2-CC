@@ -1,4 +1,12 @@
+# Ficheiro de implementação de estrutura de cache
+#
+# @Author: Ricardo Alves Oliveira (A96794)
+# @Author: Rodrigo José Teixeira Freita (A96547)
+#
+# @Version: 02012023
+
 import time
+
 
 class Cache:
 

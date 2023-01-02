@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+
+# Ficheiro principal dos servidores DNS
+#
+# @Author: Ricardo Alves Oliveira (A96794)
+# @Author: Rodrigo José Teixeira Freita (A96547)
+#
+# @Version: 02012023
+
 import socket
 import sys
 import threading
